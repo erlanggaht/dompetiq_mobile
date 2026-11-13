@@ -1,10 +1,33 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/auth/forgot_password_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 
+// Satu halaman, dua varian: reset password & reset PIN.
+// Bedanya hanya endpoint dan teks; alur form sama persis.
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  final String title;
+  final String description;
+  final String endpoint;
+  final String sentMessage;
+
+  const ForgotPasswordScreen({super.key})
+    : title = 'Forgot Password?',
+      description = 'Enter your username or email, we will send a reset link.',
+      endpoint = ApiRouteConfig.resetPasswordSend,
+      sentMessage =
+          'We sent a password reset link. Open it to set a new password. '
+          'The link expires in 15 minutes.';
+
+  const ForgotPasswordScreen.pin({super.key})
+    : title = 'Forgot PIN?',
+      description =
+          'Enter your username or email, we will send a recovery link.',
+      endpoint = ApiRouteConfig.pinResetSend,
+      sentMessage =
+          'If your account has a PIN, a recovery link has been sent to '
+          'your registered email. The link expires in 15 minutes.';
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -37,7 +60,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _forgotPasswordService.sendResetLink(username: username);
+      await _forgotPasswordService.sendResetLink(
+        username: username,
+        endpoint: widget.endpoint,
+      );
       if (!mounted) return;
       setState(() => _sent = true);
     } catch (e) {
@@ -74,10 +100,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'We sent a password reset link. Open it to set a new password. The link expires in 15 minutes.',
+                    Text(
+                      widget.sentMessage,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15, color: Color(0xFF1C1C1C)),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF1C1C1C),
+                      ),
                     ),
                     const SizedBox(height: 26),
                     SizedBox(
@@ -112,19 +141,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 26,
                         color: Color(0xFF1C1C1C),
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Enter your username or email, we will send a reset link.',
+                    Text(
+                      widget.description,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1C)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF1C1C1C),
+                      ),
                     ),
                     const SizedBox(height: 26),
                     TextField(
@@ -169,7 +201,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: const Text(
-                        'Back to Login',
+                        'Back',
                         style: TextStyle(
                           fontSize: 14,
                           color: Color(0xFF87879D),

@@ -6,7 +6,9 @@ class ApiRouteConfig {
   static const String register = '/auth/create-account';
   static const String rekenings = '/general/rekenings';
   static const String resetPasswordSend = '/auth/reset-password/send';
+  static const String pinResetSend = '/auth/reset-pin/send';
   static const String limitDevice = '/auth/limit-device';
   static const String accountTransfers = '/account-transfers';
   static const String financialRecord = '/financial-record';
+  static const String securityPin = '/settings/security/pin';
 }

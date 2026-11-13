@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dompetiq',
+      navigatorKey: DioClient.navigatorKey,
       routes: {
         '/': (context) => HomeScreen(),
         '/auth/login': (context) => LoginScreen(),

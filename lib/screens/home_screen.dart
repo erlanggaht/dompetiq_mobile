@@ -7,6 +7,7 @@ import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -224,9 +225,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   // settings: menyimpan Sign out karena mockup tidak punya slot logout
                   PopupMenuButton<String>(
                     onSelected: (value) {
-                      if (value == 'logout') _handleLogout();
+                      if (value == 'changePin') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChangePinScreen(),
+                          ),
+                        );
+                      } else if (value == 'logout') {
+                        _handleLogout();
+                      }
                     },
                     itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'changePin',
+                        child: Text('Change PIN'),
+                      ),
                       PopupMenuItem(value: 'logout', child: Text('Sign out')),
                     ],
                     icon: const Icon(

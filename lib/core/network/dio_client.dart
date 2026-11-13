@@ -1,12 +1,24 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DioClient {
   static const _baseUrl = String.fromEnvironment("API_URL");
   static const _sessionCookieName = '_Host-session';
-  static String? _sessionCookie;
+
+  // akses Navigator dari luar widget (dipakai interceptor 401)
+  static final navigatorKey = GlobalKey<NavigatorState>();
+
   // beberapa cookie bisa aktif bersamaan (_Host-session, _tmpUser)
   static final Map<String, String> _cookies = {};
+  static String? _sessionCookie;
+
+  static const _authEndpoints = [
+    '/auth/login',
+    '/auth/create-account',
+    '/auth/reset-password/send',
+    '/auth/reset-pin/send',
+  ];
 
   static final Dio _dio =
       Dio(
@@ -22,7 +34,6 @@ class DioClient {
         )
         ..interceptors.add(
           InterceptorsWrapper(
-            // backend auth-nya cookie-based: tempel session di tiap request
             onRequest: (options, handler) {
               if (_cookies.isNotEmpty) {
                 options.headers['Cookie'] = _cookies.entries
@@ -34,6 +45,20 @@ class DioClient {
             onResponse: (response, handler) {
               _captureSession(response);
               handler.next(response);
+            },
+            onError: (error, handler) {
+              final isAuthRequest = _authEndpoints.any(
+                (endpoint) => error.requestOptions.uri.path.contains(endpoint),
+              );
+              // sesi expired di tengah pemakaian → ke halaman login
+              if (error.response?.statusCode == 401 && !isAuthRequest) {
+                clearSession();
+                navigatorKey.currentState?.pushNamedAndRemoveUntil(
+                  '/auth/login',
+                  (route) => false,
+                );
+              }
+              handler.next(error);
             },
           ),
         );
@@ -59,6 +84,7 @@ class DioClient {
 
   static final _storage = FlutterSecureStorage();
 
+  // dipanggil sekali di main(): pulihkan session dari penyimpanan
   static Future<void> loadSession() async {
     _sessionCookie = await _storage.read(key: _sessionCookieName);
     if (_sessionCookie == null) return;

@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:flutter_application_1/feat/auth/pin_service.dart';
+import 'package:flutter_application_1/screens/forgot_password_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
+import 'package:flutter_application_1/widgets/pin_input.dart';
 
 class PinVerificationScreen extends StatefulWidget {
   final String challengeToken;
@@ -21,15 +22,13 @@ class PinVerificationScreen extends StatefulWidget {
   State<PinVerificationScreen> createState() => _PinVerificationScreenState();
 }
 
-// Satu TextField tersembunyi menampung seluruh PIN; 4 kotak hanya display.
-// Pendekatan ini membuat backspace bekerja alami, termasuk saat kotak
-// berikutnya masih kosong (4 TextField terpisah tidak bisa melakukan itu).
 class _PinVerificationScreenState extends State<PinVerificationScreen>
     with SingleTickerProviderStateMixin {
   final _pinService = PinService();
   final _pinController = TextEditingController();
-  final _pinFocus = FocusNode();
   bool _isLoading = false;
+  // 429: backend mengunci percobaan PIN selama 15 menit
+  String? _lockMessage;
   Timer? _countdownTimer;
 
   // PIN salah: goyang 3x
@@ -53,9 +52,6 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
       // langsung verifikasi begitu 4 digit terkumpul
       if (_pin.length == 4 && !_isLoading) _handleSubmit();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pinFocus.requestFocus();
-    });
   }
 
   @override
@@ -63,7 +59,6 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
     _countdownTimer?.cancel();
     _shakeController.dispose();
     _pinController.dispose();
-    _pinFocus.dispose();
     super.dispose();
   }
 
@@ -73,6 +68,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
   }
 
   Future<void> _handleSubmit() async {
+    if (_lockMessage != null) return;
     if (_pin.length != 4) {
       _showSnack('PIN must be 4 digits');
       return;
@@ -98,9 +94,13 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      _showSnack(e.toString().replaceFirst('Exception: ', ''));
+      final message = e.toString().replaceFirst('Exception: ', '');
+      _showSnack(message);
+      // 429: kunci verifikasi sampai masa tunggu backend selesai
+      if (message.contains('15 menit')) {
+        _lockMessage = message;
+      }
       _pinController.clear();
-      _pinFocus.requestFocus();
       _shakeController.forward(from: 0);
       setState(() {});
     } finally {
@@ -116,149 +116,106 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: GestureDetector(
-        // ketuk di mana pun tetap membuka keyboard
-        onTap: () => _pinFocus.requestFocus(),
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(30.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Verify PIN',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Color(0xFF1C1C1C),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Verify PIN',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 26,
+                  color: Color(0xFF1C1C1C),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Enter your 4-digit PIN to continue',
-                  style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1C)),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Enter your 4-digit PIN to continue',
+                style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1C)),
+              ),
+              const SizedBox(height: 26),
+              AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  final offset = sin(_shakeController.value * 2 * pi * 3) * 10;
+                  return Transform.translate(
+                    offset: Offset(offset, 0),
+                    child: child,
+                  );
+                },
+                child: PinInputField(
+                  controller: _pinController,
+                  autoFocus: true,
                 ),
-                const SizedBox(height: 26),
-                AnimatedBuilder(
-                  animation: _shakeController,
-                  builder: (context, child) {
-                    final offset =
-                        sin(_shakeController.value * 2 * pi * 3) * 10;
-                    return Transform.translate(
-                      offset: Offset(offset, 0),
-                      child: child,
-                    );
-                  },
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // kotak display; index == panjang PIN = posisi input
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(4, (i) {
-                          final hasDigit = i < _pin.length;
-                          final isFocused =
-                              i == _pin.length && _pinFocus.hasFocus;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 58,
-                            height: 64,
-                            margin: const EdgeInsets.symmetric(horizontal: 7),
-                            decoration: BoxDecoration(
-                              color: isFocused || hasDigit
-                                  ? Colors.white
-                                  : const Color(0xFFF2F4F9),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                width: 2,
-                                color: isFocused
-                                    ? const Color(0xFF3B62FF)
-                                    : hasDigit
-                                    ? const Color(0xFF3B62FF)
-                                          .withValues(alpha: 0.35)
-                                    : const Color(0xFFE4E7F0),
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              hasDigit ? _pin[i] : '',
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1C1C1C),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                      // field input yang sebenarnya, dibuat transparan
-                      Opacity(
-                        opacity: 0,
-                        child: SizedBox(
-                          width: 70,
-                          height: 64,
-                          child: TextField(
-                            controller: _pinController,
-                            focusNode: _pinFocus,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            maxLength: 4,
-                            decoration: const InputDecoration(
-                              counterText: '',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
+              ),
+              const SizedBox(height: 10),
+              if (_lockMessage != null) ...[
                 Text(
-                  remaining.isNegative
-                      ? 'Session expired'
-                      : 'Session expires in $minutes:${seconds.toString().padLeft(2, '0')}',
+                  _lockMessage!,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF87879D),
+                    color: Color(0xFFDC2626),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 26),
-                SizedBox(
-                  width: double.infinity,
-                  height: 49,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSubmit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B62FF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Verify',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ),
+                const SizedBox(height: 8),
               ],
-            ),
+              Text(
+                remaining.isNegative
+                    ? 'Session expired'
+                    : 'Session expires in $minutes:${seconds.toString().padLeft(2, '0')}',
+                style: const TextStyle(fontSize: 13, color: Color(0xFF87879D)),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPasswordScreen.pin(),
+                  ),
+                ),
+                child: const Text(
+                  'Forgot PIN?',
+                  style: TextStyle(color: Color(0xFF3B62FF)),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 49,
+                child: ElevatedButton(
+                  onPressed: (_isLoading || _lockMessage != null)
+                      ? null
+                      : _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B62FF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Verify',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
