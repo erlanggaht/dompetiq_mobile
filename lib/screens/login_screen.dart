@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
+import 'package:flutter_application_1/screens/device_limit_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/pin_verification_screen.dart';
 
@@ -82,6 +83,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      if (e is MaxDeviceException) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const DeviceLimitScreen()),
+        );
+        return;
+      }
       _showSnack(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -91,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
@@ -160,7 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 26),
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/auth/forgot-password'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/auth/forgot-password'),
                 child: const Text(
                   'Forgot Password?',
                   style: TextStyle(
@@ -172,8 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
               GestureDetector(
-                onTap: () =>
-                    Navigator.pushNamed(context, '/auth/register'),
+                onTap: () => Navigator.pushNamed(context, '/auth/register'),
                 child: const Text(
                   "Don't have an account? Sign Up",
                   style: TextStyle(

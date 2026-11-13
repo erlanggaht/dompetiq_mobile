@@ -2,8 +2,6 @@ import 'dart:math';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// deviceId = UUID acak yang dibuat sekali lalu disimpan, sama polanya
-// dengan hooks/useDeviceId.tsx di web
 class DeviceId {
   static const _key = 'deviceId';
   static const _storage = FlutterSecureStorage();

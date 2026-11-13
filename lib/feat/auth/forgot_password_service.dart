@@ -15,8 +15,8 @@ class ForgotPasswordService {
         data: {'username': username},
       );
     } on DioException catch (e) {
-      final message = e.response?.data?['error']?['message'] ??
-          'Failed to send reset link';
+      final message =
+          e.response?.data?['error']?['message'] ?? 'Failed to send reset link';
       throw Exception(message);
     }
   }

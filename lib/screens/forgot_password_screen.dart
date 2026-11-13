@@ -51,6 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
@@ -58,8 +59,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.mark_email_read_outlined,
-                        size: 56, color: Color(0xFF3B62FF)),
+                    const Icon(
+                      Icons.mark_email_read_outlined,
+                      size: 56,
+                      color: Color(0xFF3B62FF),
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'Check your email',
@@ -73,8 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const Text(
                       'We sent a password reset link. Open it to set a new password. The link expires in 15 minutes.',
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 15, color: Color(0xFF1C1C1C)),
+                      style: TextStyle(fontSize: 15, color: Color(0xFF1C1C1C)),
                     ),
                     const SizedBox(height: 26),
                     SizedBox(
@@ -84,7 +87,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         onPressed: () => Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
+                            builder: (context) => const LoginScreen(),
+                          ),
                           (route) => false,
                         ),
                         style: ElevatedButton.styleFrom(
@@ -167,7 +171,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: const Text(
                         'Back to Login',
                         style: TextStyle(
-                            fontSize: 14, color: Color(0xFF87879D)),
+                          fontSize: 14,
+                          color: Color(0xFF87879D),
+                        ),
                       ),
                     ),
                   ],

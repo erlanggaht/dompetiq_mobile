@@ -76,7 +76,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (!RegExp(r'^[a-zA-Z0-9_]{3,15}$').hasMatch(username)) {
-      _showSnack('Username must be 3-15 characters (letters, numbers, underscore)');
+      _showSnack(
+        'Username must be 3-15 characters (letters, numbers, underscore)',
+      );
       return;
     }
     if (password.length < 6) {
@@ -117,6 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(30.0),
@@ -237,8 +240,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               GestureDetector(
                 onTap: () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const LoginScreen()),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
                 ),
                 child: const Text(
                   'Already have an account? Sign In',
