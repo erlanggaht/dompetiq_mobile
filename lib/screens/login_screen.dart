@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/pin_verification_screen.dart';
@@ -15,8 +16,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final String _deviceId = 'd9b0d306-d509-4ddc-a846-2ec9aa9093e4';
+  String _deviceId = '';
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    DeviceId.get().then((id) => setState(() => _deviceId = id));
+  }
 
   @override
   void dispose() {
@@ -35,7 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     if (username.isEmpty || password.isEmpty) {
-      _showSnack('Username dan password wajib diisi');
+      _showSnack('Username and password are required');
+      return;
+    }
+    if (_deviceId.isEmpty) {
+      _showSnack('Device is not ready, please try again');
       return;
     }
 
@@ -148,14 +159,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 26),
-              const Text(
-                'Forgot Password?',
-                style: TextStyle(fontSize: 14, color: Color(0xFF87879D)),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/auth/forgot-password'),
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF3B62FF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                "Don't have an account? Sign Up",
-                style: TextStyle(fontSize: 14, color: Color(0xFF87879D)),
+              GestureDetector(
+                onTap: () =>
+                    Navigator.pushNamed(context, '/auth/register'),
+                child: const Text(
+                  "Don't have an account? Sign Up",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF3B62FF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),

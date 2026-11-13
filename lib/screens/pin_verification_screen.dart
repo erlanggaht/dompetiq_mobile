@@ -71,11 +71,11 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
 
   Future<void> _handleSubmit() async {
     if (_pin.length != 4) {
-      _showSnack('PIN harus 4 digit');
+      _showSnack('PIN must be 4 digits');
       return;
     }
     if (DateTime.now().isAfter(widget.expiresAt)) {
-      _showSnack('Sesi verifikasi PIN berakhir, silakan login ulang');
+      _showSnack('PIN session has expired, please sign in again');
       return;
     }
 
@@ -120,7 +120,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Verifikasi PIN',
+                'Verify PIN',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
@@ -129,7 +129,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Masukkan PIN 4 digit untuk melanjutkan',
+                'Enter your 4-digit PIN to continue',
                 style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1C)),
               ),
               const SizedBox(height: 26),
@@ -163,8 +163,8 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
               const SizedBox(height: 10),
               Text(
                 remaining.isNegative
-                    ? 'Sesi berakhir'
-                    : 'Sesi berakhir dalam $minutes:${seconds.toString().padLeft(2, '0')}',
+                    ? 'Session expired'
+                    : 'Session expires in $minutes:${seconds.toString().padLeft(2, '0')}',
                 style: const TextStyle(
                     fontSize: 13, color: Color(0xFF87879D)),
               ),
@@ -190,7 +190,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                           ),
                         )
                       : const Text(
-                          'Verifikasi',
+                          'Verify',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
