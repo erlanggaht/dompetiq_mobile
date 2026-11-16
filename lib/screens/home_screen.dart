@@ -159,9 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildActionCard(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   _buildTransactionSection(),
-                  const SizedBox(height: 24),
+                  // ruang ekstra: konten tidak boleh hilang di balik pill navbar
+                  const SizedBox(height: 96),
                 ],
               ),
             ),
@@ -188,11 +189,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => _showSnack('Menu coming soon'),
-                    icon: const Icon(Icons.menu, color: Colors.white),
-                  ),
-                  const SizedBox(width: 4),
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(

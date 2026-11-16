@@ -1,0 +1,162 @@
+import 'package:flutter/material.dart';
+
+import 'package:flutter_application_1/screens/budget_screen.dart';
+import 'package:flutter_application_1/screens/home_screen.dart';
+import 'package:flutter_application_1/screens/profile_screen.dart';
+import 'package:flutter_application_1/screens/transactions_screen.dart';
+
+// Host bottom navigation pill: Home, Transactions, [+ Catat], Budget, Profile.
+// Slot tengah adalah aksi (bukan halaman), jadi hanya 4 halaman.
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  static const _pages = [
+    HomeScreen(),
+    TransactionsScreen(),
+    BudgetScreen(),
+    ProfileScreen(),
+  ];
+
+  int _index = 0;
+
+  void _onSlotTap(int slot) {
+    if (slot == 2) {
+      // aksi catat transaksi: bentuk halaman belum ada
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add transaction coming soon')),
+      );
+      return;
+    }
+    // slot 3 (Budget) dst bergeser -1 karena slot tengah bukan halaman
+    setState(() => _index = slot < 2 ? slot : slot - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // body melewati area navbar supaya warna di sekeliling pill
+      // menyambung dengan warna halaman (tidak ada strip background lain)
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: IndexedStack(index: _index, children: _pages),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _NavSlot(
+            icon: _index == 0 ? Icons.home_rounded : Icons.home_outlined,
+            active: _index == 0,
+            onTap: () => _onSlotTap(0),
+          ),
+          _NavSlot(
+            icon: _index == 1
+                ? Icons.receipt_long_rounded
+                : Icons.receipt_long_outlined,
+            active: _index == 1,
+            onTap: () => _onSlotTap(1),
+          ),
+          _AddButton(onTap: () => _onSlotTap(2)),
+          _NavSlot(
+            icon: _index == 2
+                ? Icons.pie_chart_rounded
+                : Icons.pie_chart_outline_rounded,
+            active: _index == 2,
+            onTap: () => _onSlotTap(3),
+          ),
+          _NavSlot(
+            icon: _index == 3
+                ? Icons.person_rounded
+                : Icons.person_outline_rounded,
+            active: _index == 3,
+            onTap: () => _onSlotTap(4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavSlot extends StatelessWidget {
+  final IconData icon;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _NavSlot({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Icon(
+            icon,
+            size: 26,
+            color: active ? const Color(0xFF1C1C1C) : const Color(0xFF9AA0AC),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    // heightFactor: tanpa ini Center mengembang memenuhi tinggi Scaffold
+    // (loose constraints) → pill putih menutupi seluruh layar
+    return Expanded(
+      child: Center(
+        heightFactor: 1,
+        child: Material(
+          // biru brand + elevasi biar jelas ini tombol utama
+          color: const Color(0xFF3B62FF),
+          elevation: 6,
+          shadowColor: const Color(0xFF3B62FF).withValues(alpha: 0.4),
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: const SizedBox(
+              width: 50,
+              height: 50,
+              child: Icon(Icons.add_rounded, color: Colors.white, size: 30),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

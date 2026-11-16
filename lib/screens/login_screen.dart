@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/device_limit_screen.dart';
-import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/pin_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -65,10 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (data['requiresPin'] != true) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         return;
       }
 

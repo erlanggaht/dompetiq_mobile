@@ -3,9 +3,8 @@ import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/forgot_password_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/screens/main_screen.dart';
 import 'package:flutter_application_1/screens/register_screen.dart';
-
-import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'Dompetiq',
       navigatorKey: DioClient.navigatorKey,
       routes: {
-        '/': (context) => HomeScreen(),
+        '/': (context) => const MainScreen(),
         '/auth/login': (context) => LoginScreen(),
         '/auth/register': (context) => const RegisterScreen(),
         '/auth/forgot-password': (context) => const ForgotPasswordScreen(),

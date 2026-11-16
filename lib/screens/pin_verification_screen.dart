@@ -4,8 +4,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/feat/auth/pin_service.dart';
+import 'package:flutter_application_1/feat/auth/login_service.dart';
+import 'package:flutter_application_1/screens/device_limit_screen.dart';
 import 'package:flutter_application_1/screens/forgot_password_screen.dart';
-import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/widgets/pin_input.dart';
 
 class PinVerificationScreen extends StatefulWidget {
@@ -87,13 +88,18 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
       );
 
       if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-        (route) => false,
-      );
+      // masuk lewat route '/' supaya Home terbungkus MainScreen (navbar ikut)
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } catch (e) {
       if (!mounted) return;
+      // kena batas 5 device saat completeLogin → layar kelola device
+      if (e is MaxDeviceException) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DeviceLimitScreen()),
+        );
+        return;
+      }
       final message = e.toString().replaceFirst('Exception: ', '');
       _showSnack(message);
       // 429: kunci verifikasi sampai masa tunggu backend selesai

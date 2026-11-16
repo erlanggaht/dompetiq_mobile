@@ -47,6 +47,11 @@ class DioClient {
               handler.next(response);
             },
             onError: (error, handler) {
+              // cookie _tmpUser dikirim backend pada respons ERROR maxDevice;
+              // onResponse tidak pernah dieksekusi untuk respons error
+              if (error.response != null) {
+                _captureSession(error.response!);
+              }
               final isAuthRequest = _authEndpoints.any(
                 (endpoint) => error.requestOptions.uri.path.contains(endpoint),
               );
