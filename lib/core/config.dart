@@ -13,4 +13,15 @@ class ApiRouteConfig {
   static const String categoryMe = '/general/categorys/me';
   static const String rekeningMe = '/general/rekenings/me';
   static const String securityPin = '/settings/security/pin';
+  static const String usersMe = '/users/me';
+}
+
+class StorageConfig {
+  static const String baseUrl = 'https://nos.jkt-1.neo.id/dompetiq';
+
+  static String? avatarUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    return '$baseUrl${path.startsWith('/') ? '' : '/'}$path';
+  }
 }

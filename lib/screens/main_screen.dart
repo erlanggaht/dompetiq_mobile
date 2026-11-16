@@ -5,6 +5,7 @@ import 'package:flutter_application_1/screens/budget_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/profile_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
+import 'package:flutter_application_1/widgets/app_drawer.dart';
 
 // Slot tengah (+) adalah aksi, bukan halaman
 class MainScreen extends StatefulWidget {
@@ -16,9 +17,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final _homeKey = GlobalKey<HomeScreenState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final List<Widget> _pages = [
-    HomeScreen(key: _homeKey, onOpenProfile: () => _onSlotTap(4)),
+    HomeScreen(
+      key: _homeKey,
+      onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+      onOpenProfile: () => _onSlotTap(4),
+    ),
     const TransactionsScreen(),
     const BudgetScreen(),
     const ProfileScreen(),
@@ -41,9 +47,11 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       // extendBody: warna halaman menyambung di sekitar pill
       extendBody: true,
       backgroundColor: Colors.transparent,
+      drawer: AppDrawer(onOpenProfile: () => _onSlotTap(4)),
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: _buildBottomBar(),
     );

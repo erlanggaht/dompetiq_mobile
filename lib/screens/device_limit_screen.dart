@@ -47,13 +47,14 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
   }
 
   Future<void> _removeDevice(Map<String, dynamic> device) async {
-    final deviceId = device['id'];
+    // backend mencocokkan deviceId string, bukan id baris DB
+    final deviceId = device['deviceId'] as String?;
     if (deviceId == null) return;
 
     setState(() => _isLoading = true);
     try {
       await DioClient.instance.delete(
-        '${ApiRouteConfig.limitDevice}/$deviceId',
+        '${ApiRouteConfig.limitDevice}/${Uri.encodeComponent(deviceId)}',
       );
       await _loadDevices();
     } on DioException catch (e) {
@@ -63,6 +64,17 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  // UA dari app berisi "undefined - undefined", jangan ditampilkan mentah
+  String _deviceLabel(Map<String, dynamic> device, int index) {
+    final parts = [device['browser'], device['os']].whereType<String>().where(
+      (s) => s.isNotEmpty && !s.contains('undefined'),
+    );
+    final label = parts.join(' · ');
+    if (label.isNotEmpty) return label;
+    final ip = (device['ip'] as String?) ?? '';
+    return ip.isEmpty ? 'Device ${index + 1}' : 'Device ${index + 1} · $ip';
   }
 
   Future<void> _retryLogin(BuildContext context) async {
@@ -139,10 +151,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                       itemBuilder: (context, index) {
                         final device = _devices[index] as Map<String, dynamic>;
                         final isCurrent = device['isCurrent'] == true;
-                        final label = [
-                          device['browser'],
-                          device['os'],
-                        ].where((s) => (s as String).isNotEmpty).join(' · ');
+                        final label = _deviceLabel(device, index);
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),

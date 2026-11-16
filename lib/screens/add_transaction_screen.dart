@@ -13,7 +13,9 @@ const _muted = Color(0xFF8A90A2);
 const _hairline = Color(0xFFEFF1F5);
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final String initialType;
+
+  const AddTransactionScreen({super.key, this.initialType = 'Income'});
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -24,6 +26,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _amountController = TextEditingController(text: '0');
   final _descriptionController = TextEditingController();
   final _amountFocus = FocusNode();
+  final _noteFocus = FocusNode();
 
   String _type = 'Income';
   int? _categoryId;
@@ -38,6 +41,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    _type = widget.initialType;
     _load();
   }
 
@@ -46,6 +50,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _amountController.dispose();
     _descriptionController.dispose();
     _amountFocus.dispose();
+    _noteFocus.dispose();
     super.dispose();
   }
 
@@ -318,6 +323,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 focusNode: _amountFocus,
                 autofocus: true,
                 keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => _noteFocus.requestFocus(),
                 inputFormatters: [_ThousandsFormatter()],
                 cursorColor: _accent,
                 style: const TextStyle(
@@ -376,8 +383,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               Expanded(
                 child: TextField(
                   controller: _descriptionController,
+                  focusNode: _noteFocus,
                   maxLength: 255,
                   textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _save(),
                   cursorColor: _accent,
                   textAlign: TextAlign.right,
                   style: const TextStyle(

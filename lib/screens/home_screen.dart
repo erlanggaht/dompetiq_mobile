@@ -1,19 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/config.dart';
-import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
-import 'package:flutter_application_1/feat/auth/login_service.dart';
-import 'package:flutter_application_1/screens/login_screen.dart';
-import 'package:flutter_application_1/screens/change_pin_screen.dart';
+import 'package:flutter_application_1/feat/user/user_service.dart';
+import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 class HomeScreen extends StatefulWidget {
+  final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenProfile;
 
-  const HomeScreen({super.key, this.onOpenProfile});
+  const HomeScreen({super.key, this.onOpenMenu, this.onOpenProfile});
 
   @override
   State<HomeScreen> createState() => HomeScreenState();
@@ -22,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   int _balance = 0;
   List<Map<String, dynamic>> _transactions = [];
+  String? _avatar;
   bool _isLoading = true;
   String? _error;
 
@@ -29,6 +30,19 @@ class HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _loadAvatar();
+  }
+
+  Future<void> _loadAvatar() async {
+    try {
+      final data = await UserService.me();
+      if (!mounted) return;
+      setState(() {
+        _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
+      });
+    } on DioException {
+      // avatar opsional, header tetap tampil tanpa foto
+    }
   }
 
   void _showSnack(String message) {
@@ -36,41 +50,17 @@ class HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout'),
-          ),
-        ],
+  void reload() => _loadData();
+
+  Future<void> _openTransactionForm(String type) async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTransactionScreen(initialType: type),
       ),
     );
-    if (confirmed != true) return;
-
-    try {
-      await AuthService().logout(deviceId: await DeviceId.get());
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      _showSnack(e.toString().replaceFirst('Exception: ', ''));
-    }
+    if (saved == true && mounted) _loadData();
   }
-
-  void reload() => _loadData();
 
   Future<void> _loadData() async {
     setState(() {
@@ -194,27 +184,9 @@ class HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     width: 44,
                     height: 44,
-                    child: PopupMenuButton<String>(
+                    child: IconButton(
                       padding: EdgeInsets.zero,
-                      onSelected: (value) {
-                        if (value == 'changePin') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ChangePinScreen(),
-                            ),
-                          );
-                        } else if (value == 'logout') {
-                          _handleLogout();
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'changePin',
-                          child: Text('Change PIN'),
-                        ),
-                        PopupMenuItem(value: 'logout', child: Text('Sign out')),
-                      ],
+                      onPressed: widget.onOpenMenu,
                       icon: const Icon(
                         Icons.menu_rounded,
                         color: Colors.white,
@@ -242,14 +214,19 @@ class HomeScreenState extends State<HomeScreen> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          const CircleAvatar(
+                          CircleAvatar(
                             radius: 19,
                             backgroundColor: Colors.white,
-                            child: Icon(
-                              Icons.person_rounded,
-                              color: Color(0xFF3B62FF),
-                              size: 22,
-                            ),
+                            backgroundImage: _avatar != null
+                                ? NetworkImage(_avatar!)
+                                : null,
+                            child: _avatar == null
+                                ? const Icon(
+                                    Icons.person_rounded,
+                                    color: Color(0xFF3B62FF),
+                                    size: 22,
+                                  )
+                                : null,
                           ),
                           Positioned(
                             right: 0,
@@ -284,19 +261,49 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              // scaleDown supaya nominal besar tidak meluber
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  formatRupiah(_balance),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 44,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    height: 1.25,
-                  ),
+              GestureDetector(
+                onTap: BalanceVisibility.toggle,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      // scaleDown supaya nominal besar tidak meluber
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: BalanceVisibility.visible,
+                          builder: (context, visible, _) => Text(
+                            visible ? formatRupiah(_balance) : '••••••',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.1,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: BalanceVisibility.visible,
+                      builder: (context, visible, _) => IconButton(
+                        onPressed: BalanceVisibility.toggle,
+                        icon: Icon(
+                          visible
+                              ? Icons.lock_open_rounded
+                              : Icons.lock_rounded,
+                        ),
+                        iconSize: 20,
+                        color: Colors.white70,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: visible ? 'Hide balance' : 'Show balance',
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
@@ -338,14 +345,14 @@ class HomeScreenState extends State<HomeScreen> {
               icon: Icons.trending_up_rounded,
               label: 'Income',
               color: const Color(0xFF16A34A),
-              onTap: () => _showSnack('Income form coming soon'),
+              onTap: () => _openTransactionForm('Income'),
             ),
             _verticalDivider(),
             _HeaderAction(
               icon: Icons.trending_down_rounded,
               label: 'Spending',
               color: const Color(0xFFDC2626),
-              onTap: () => _showSnack('Spending form coming soon'),
+              onTap: () => _openTransactionForm('Spending'),
             ),
             _verticalDivider(),
             _HeaderAction(

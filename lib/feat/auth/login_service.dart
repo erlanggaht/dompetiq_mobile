@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/core/config.dart';
+import 'package:flutter_application_1/feat/user/user_service.dart';
 
 import '../../../core/network/dio_client.dart';
 
@@ -45,6 +46,7 @@ class AuthService {
     } on DioException {
       // sesi lokal tetap dihapus meski request gagal
     } finally {
+      UserService.clear();
       await DioClient.clearSession();
     }
   }
