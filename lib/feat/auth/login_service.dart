@@ -35,22 +35,17 @@ class AuthService {
   }
 
   Future<bool> isSessionValid() async {
-    try {
-      final response = await _dio.get(ApiRouteConfig.loginCheck);
-      return response.data['data']?['isLogin'] == true;
-    } on DioException {
-      return false;
-    }
+    final response = await _dio.get(ApiRouteConfig.loginCheck);
+    return response.data['data']?['isLogin'] == true;
   }
 
   Future<void> logout({required String deviceId}) async {
     try {
       await _dio.post(ApiRouteConfig.logout, data: {'deviceId': deviceId});
-    } on DioException catch (e) {
-      final message = e.response?.data?['error']?['message'] ?? 'Logout gagal';
-      throw Exception(message);
+    } on DioException {
+      // sesi lokal tetap dihapus meski request gagal
     } finally {
-      DioClient.clearSession();
+      await DioClient.clearSession();
     }
   }
 }

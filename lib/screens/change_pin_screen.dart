@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/feat/settings/security_service.dart';
 import 'package:flutter_application_1/widgets/pin_input.dart';
 
-// Satu halaman dua fungsi: mengganti PIN (wajib isi password lama)
-// atau mengaktifkan PIN pertama kali (tanpa password).
 class ChangePinScreen extends StatefulWidget {
   const ChangePinScreen({super.key});
 

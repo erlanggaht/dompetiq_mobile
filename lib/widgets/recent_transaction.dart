@@ -39,7 +39,6 @@ class RecentTransactionWidget extends StatelessWidget {
       );
     }
 
-    // semua baris dalam satu kartu + divider, sesuai mockup
     final rows = <Widget>[];
     for (var i = 0; i < _transactions.length; i++) {
       final item = _transactions[i] as Map<String, dynamic>;

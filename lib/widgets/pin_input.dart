@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Input PIN: satu TextField tersembunyi menampung 4 digit, kotak-kotak hanya
-// display. Pendekatan ini membuat backspace bekerja alami, termasuk saat
-// kotak berikutnya masih kosong (4 TextField terpisah tidak bisa).
+// Satu TextField tersembunyi: backspace bekerja di semua posisi
 class PinInputField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
@@ -50,13 +48,11 @@ class _PinInputFieldState extends State<PinInputField> {
   Widget build(BuildContext context) {
     final pin = widget.controller.text;
     return GestureDetector(
-      // ketuk area kotak mana pun tetap membuka keyboard
       onTap: () => _focus.requestFocus(),
       behavior: HitTestBehavior.opaque,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // index == panjang PIN = posisi input berikutnya
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(4, (i) {

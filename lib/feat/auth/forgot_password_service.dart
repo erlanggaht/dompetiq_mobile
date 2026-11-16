@@ -5,7 +5,6 @@ import '../../core/network/dio_client.dart';
 class ForgotPasswordService {
   final Dio _dio = DioClient.instance;
 
-  // dipakai dua varian: reset password & reset PIN (beda endpoint, body sama)
   Future<void> sendResetLink({
     required String username,
     required String endpoint,

@@ -4,7 +4,6 @@ import 'package:flutter_application_1/core/config.dart';
 
 import '../../core/network/dio_client.dart';
 
-// GET /settings/security/pin (status) & PUT /settings/security/pin (simpan)
 class SecurityService {
   final Dio _dio = DioClient.instance;
 

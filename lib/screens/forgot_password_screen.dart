@@ -4,8 +4,6 @@ import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/auth/forgot_password_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 
-// Satu halaman, dua varian: reset password & reset PIN.
-// Bedanya hanya endpoint dan teks; alur form sama persis.
 class ForgotPasswordScreen extends StatefulWidget {
   final String title;
   final String description;

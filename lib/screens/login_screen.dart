@@ -16,14 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  String _deviceId = '';
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    DeviceId.get().then((id) => setState(() => _deviceId = id));
-  }
 
   @override
   void dispose() {
@@ -38,15 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    final username = _usernameController.text;
+    final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
     if (username.isEmpty || password.isEmpty) {
       _showSnack('Username and password are required');
-      return;
-    }
-    if (_deviceId.isEmpty) {
-      _showSnack('Device is not ready, please try again');
       return;
     }
 
@@ -56,10 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await _authService.login(
         username: username,
         password: password,
-        deviceId: _deviceId,
+        deviceId: await DeviceId.get(),
       );
 
       final data = response['data'];
+      if (data == null) throw Exception('Login gagal');
 
       if (!mounted) return;
 
@@ -137,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 49,
                 child: ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B62FF),
                     shape: RoundedRectangleBorder(

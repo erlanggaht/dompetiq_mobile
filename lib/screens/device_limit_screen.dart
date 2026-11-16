@@ -1,14 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 
 import '../../core/network/dio_client.dart';
 
-// daftar device + lepas device, dipakai saat login kena batas 5 device.
-// backend mengenali user ini lewat cookie _tmpUser (didapat saat error login)
+// dipakai saat kena limit 5 device; user dikenali lewat cookie _tmpUser
 class DeviceLimitScreen extends StatefulWidget {
   const DeviceLimitScreen({super.key});
 
@@ -50,7 +48,6 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
 
   Future<void> _removeDevice(Map<String, dynamic> device) async {
     final deviceId = device['id'];
-    // device saat ini bersifat virtual (tanpa id), tidak bisa dilepas
     if (deviceId == null) return;
 
     setState(() => _isLoading = true);
@@ -69,7 +66,6 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
   }
 
   Future<void> _retryLogin(BuildContext context) async {
-    await SystemNavigator.pop();
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
@@ -188,8 +184,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                                     if (device['refreshTokens']?['createdAt'] !=
                                         null)
                                       Text(
-                                        'Last active: ${DateTime.parse(device['refreshTokens']['createdAt']).toLocal()}'
-                                            .substring(0, 34),
+                                        'Last active: ${DateTime.parse(device['refreshTokens']['createdAt']).toLocal().toString().substring(0, 16)}',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,

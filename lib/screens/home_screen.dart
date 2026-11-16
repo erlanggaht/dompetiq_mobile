@@ -68,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // saldo: GET /account-transfers, transaksi: GET /financial-record
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
@@ -161,7 +160,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildActionCard(),
                   const SizedBox(height: 32),
                   _buildTransactionSection(),
-                  // ruang ekstra: konten tidak boleh hilang di balik pill navbar
                   const SizedBox(height: 96),
                 ],
               ),
@@ -218,7 +216,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  // settings: menyimpan Sign out karena mockup tidak punya slot logout
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       if (value == 'changePin') {
@@ -305,8 +302,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // ruang untuk kartu aksi yang overlap ke bawah
-              // (112 - 80 = 32px jarak antara tombol Add Money dan kartu)
               const SizedBox(height: 112),
             ],
           ),

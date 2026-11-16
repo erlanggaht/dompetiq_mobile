@@ -28,11 +28,10 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
   final _pinService = PinService();
   final _pinController = TextEditingController();
   bool _isLoading = false;
-  // 429: backend mengunci percobaan PIN selama 15 menit
+  // 429: percobaan PIN dikunci sementara
   String? _lockMessage;
   Timer? _countdownTimer;
 
-  // PIN salah: goyang 3x
   late final AnimationController _shakeController = AnimationController(
     duration: const Duration(milliseconds: 400),
     vsync: this,
@@ -43,14 +42,13 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
   @override
   void initState() {
     super.initState();
-    // countdown butuh detak 1x/detik, bukan cuma saat user mengetik
+    // countdown perlu rebuild tiap detik
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
     _pinController.addListener(() {
       if (!mounted) return;
       setState(() {});
-      // langsung verifikasi begitu 4 digit terkumpul
       if (_pin.length == 4 && !_isLoading) _handleSubmit();
     });
   }
@@ -88,11 +86,9 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
       );
 
       if (!mounted) return;
-      // masuk lewat route '/' supaya Home terbungkus MainScreen (navbar ikut)
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } catch (e) {
       if (!mounted) return;
-      // kena batas 5 device saat completeLogin → layar kelola device
       if (e is MaxDeviceException) {
         Navigator.pushReplacement(
           context,
@@ -102,8 +98,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
       }
       final message = e.toString().replaceFirst('Exception: ', '');
       _showSnack(message);
-      // 429: kunci verifikasi sampai masa tunggu backend selesai
-      if (message.contains('15 menit')) {
+      if (e is PinLockedException) {
         _lockMessage = message;
       }
       _pinController.clear();
@@ -193,7 +188,10 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
                 width: double.infinity,
                 height: 49,
                 child: ElevatedButton(
-                  onPressed: (_isLoading || _lockMessage != null)
+                  onPressed:
+                      (_isLoading ||
+                          _lockMessage != null ||
+                          remaining.isNegative)
                       ? null
                       : _handleSubmit,
                   style: ElevatedButton.styleFrom(

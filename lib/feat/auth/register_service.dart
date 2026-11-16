@@ -6,19 +6,19 @@ import '../../core/network/dio_client.dart';
 class RegisterService {
   final Dio _dio = DioClient.instance;
 
-  // id rekening "Uang Tunai" diambil dari backend, tidak di-hardcode
   Future<Map<String, dynamic>> register({
     required String email,
     required String username,
     required String password,
     required String fullName,
     required String age, // MM-DD-YYYY, format yang diminta backend
-    required String gender, // 'male' / 'female'
+    required String gender,
   }) async {
     try {
       final rekenings = await _dio.get(ApiRouteConfig.rekenings);
       final list = (rekenings.data['data'] as List)
           .cast<Map<String, dynamic>>();
+      if (list.isEmpty) throw Exception('Data rekening belum tersedia');
       final cash = list.firstWhere(
         (r) => r['name'] == 'Uang Tunai',
         orElse: () => list.first,

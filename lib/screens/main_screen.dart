@@ -5,8 +5,7 @@ import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/profile_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
 
-// Host bottom navigation pill: Home, Transactions, [+ Catat], Budget, Profile.
-// Slot tengah adalah aksi (bukan halaman), jadi hanya 4 halaman.
+// Slot tengah (+) adalah aksi, bukan halaman
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -26,21 +25,18 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onSlotTap(int slot) {
     if (slot == 2) {
-      // aksi catat transaksi: bentuk halaman belum ada
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add transaction coming soon')),
       );
       return;
     }
-    // slot 3 (Budget) dst bergeser -1 karena slot tengah bukan halaman
     setState(() => _index = slot < 2 ? slot : slot - 1);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // body melewati area navbar supaya warna di sekeliling pill
-      // menyambung dengan warna halaman (tidak ada strip background lain)
+      // extendBody: warna halaman menyambung di sekitar pill
       extendBody: true,
       backgroundColor: Colors.transparent,
       body: IndexedStack(index: _index, children: _pages),
@@ -135,13 +131,11 @@ class _AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // heightFactor: tanpa ini Center mengembang memenuhi tinggi Scaffold
-    // (loose constraints) → pill putih menutupi seluruh layar
+    // heightFactor: cegah Center mengisi seluruh tinggi Scaffold
     return Expanded(
       child: Center(
         heightFactor: 1,
         child: Material(
-          // biru brand + elevasi biar jelas ini tombol utama
           color: const Color(0xFF3B62FF),
           elevation: 6,
           shadowColor: const Color(0xFF3B62FF).withValues(alpha: 0.4),

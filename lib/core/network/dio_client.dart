@@ -6,10 +6,8 @@ class DioClient {
   static const _baseUrl = String.fromEnvironment("API_URL");
   static const _sessionCookieName = '_Host-session';
 
-  // akses Navigator dari luar widget (dipakai interceptor 401)
   static final navigatorKey = GlobalKey<NavigatorState>();
 
-  // beberapa cookie bisa aktif bersamaan (_Host-session, _tmpUser)
   static final Map<String, String> _cookies = {};
   static String? _sessionCookie;
 
@@ -27,8 +25,7 @@ class DioClient {
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 10),
             headers: {'Content-Type': 'application/json'},
-            // web: browser baru menyimpan/mengirim cookie lintas origin kalau
-            // request pakai withCredentials (diabaikan di Android/iOS)
+            // web: cookie lintas origin hanya dikirim dengan withCredentials
             extra: {'withCredentials': true},
           ),
         )
@@ -47,15 +44,13 @@ class DioClient {
               handler.next(response);
             },
             onError: (error, handler) {
-              // cookie _tmpUser dikirim backend pada respons ERROR maxDevice;
-              // onResponse tidak pernah dieksekusi untuk respons error
+              // _tmpUser datang di respons error maxDevice, onResponse tidak jalan untuk error
               if (error.response != null) {
                 _captureSession(error.response!);
               }
               final isAuthRequest = _authEndpoints.any(
                 (endpoint) => error.requestOptions.uri.path.contains(endpoint),
               );
-              // sesi expired di tengah pemakaian → ke halaman login
               if (error.response?.statusCode == 401 && !isAuthRequest) {
                 clearSession();
                 navigatorKey.currentState?.pushNamedAndRemoveUntil(
@@ -78,8 +73,16 @@ class DioClient {
       final separator = nameValue.indexOf('=');
       if (separator <= 0) continue;
       final name = nameValue.substring(0, separator).trim();
-      // map menyimpan nilai saja; format "nama=nilai" dirakit saat dipakai
-      _cookies[name] = nameValue.substring(separator + 1);
+      final value = nameValue.substring(separator + 1);
+      if (value.isEmpty) {
+        _cookies.remove(name);
+        if (name == _sessionCookieName) {
+          _sessionCookie = null;
+          _storage.delete(key: _sessionCookieName);
+        }
+        continue;
+      }
+      _cookies[name] = value;
       if (name == _sessionCookieName) {
         _sessionCookie = nameValue;
         _storage.write(key: _sessionCookieName, value: nameValue);
@@ -89,7 +92,6 @@ class DioClient {
 
   static final _storage = FlutterSecureStorage();
 
-  // dipanggil sekali di main(): pulihkan session dari penyimpanan
   static Future<void> loadSession() async {
     _sessionCookie = await _storage.read(key: _sessionCookieName);
     if (_sessionCookie == null) return;

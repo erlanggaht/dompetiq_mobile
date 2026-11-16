@@ -11,7 +11,8 @@ Future<void> main() async {
   await DioClient.loadSession();
 
   final authService = AuthService();
-  final isLoggedIn = await authService.isSessionValid();
+  // offline tetap masuk Home; sesi yang sudah habis akan kena 401
+  final isLoggedIn = await authService.isSessionValid().catchError((_) => true);
   final initialRoute = isLoggedIn ? '/' : '/auth/login';
 
   runApp(MyApp(initialRoute: initialRoute));
