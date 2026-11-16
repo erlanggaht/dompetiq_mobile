@@ -10,5 +10,7 @@ class ApiRouteConfig {
   static const String limitDevice = '/auth/limit-device';
   static const String accountTransfers = '/account-transfers';
   static const String financialRecord = '/financial-record';
+  static const String categoryMe = '/general/categorys/me';
+  static const String rekeningMe = '/general/rekenings/me';
   static const String securityPin = '/settings/security/pin';
 }

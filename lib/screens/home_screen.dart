@@ -11,13 +11,15 @@ import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onOpenProfile;
+
+  const HomeScreen({super.key, this.onOpenProfile});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   int _balance = 0;
   List<Map<String, dynamic>> _transactions = [];
   bool _isLoading = true;
@@ -67,6 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _showSnack(e.toString().replaceFirst('Exception: ', ''));
     }
   }
+
+  void reload() => _loadData();
 
   Future<void> _loadData() async {
     setState(() {
@@ -187,58 +191,84 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 11,
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      onSelected: (value) {
+                        if (value == 'changePin') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChangePinScreen(),
+                            ),
+                          );
+                        } else if (value == 'logout') {
+                          _handleLogout();
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'changePin',
+                          child: Text('Change PIN'),
+                        ),
+                        PopupMenuItem(value: 'logout', child: Text('Sign out')),
+                      ],
+                      icon: const Icon(
+                        Icons.menu_rounded,
+                        color: Colors.white,
+                        size: 26,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.95),
-                        borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'DompetIQ',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
                       ),
-                      child: const Row(
+                    ),
+                  ),
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: GestureDetector(
+                      onTap: widget.onOpenProfile,
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
-                          Icon(
-                            Icons.search,
-                            color: Color(0xFF87879D),
-                            size: 20,
+                          const CircleAvatar(
+                            radius: 19,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.person_rounded,
+                              color: Color(0xFF3B62FF),
+                              size: 22,
+                            ),
                           ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Search "Payments"',
-                            style: TextStyle(
-                              color: Color(0xFF87879D),
-                              fontSize: 14,
+                          Positioned(
+                            right: 0,
+                            top: 2,
+                            child: Container(
+                              width: 11,
+                              height: 11,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF22C55E),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'changePin') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ChangePinScreen(),
-                          ),
-                        );
-                      } else if (value == 'logout') {
-                        _handleLogout();
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 'changePin',
-                        child: Text('Change PIN'),
-                      ),
-                      PopupMenuItem(value: 'logout', child: Text('Sign out')),
-                    ],
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -248,61 +278,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 '🇮🇩 IDR',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 0.6,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                formatRupiah(_balance),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Available Balance',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 28),
-              Center(
-                child: GestureDetector(
-                  onTap: () => _showSnack('Coming soon'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add_card_rounded,
-                          color: Color(0xFF3B62FF),
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Add Money',
-                          style: TextStyle(
-                            color: Color(0xFF3B62FF),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+              const SizedBox(height: 12),
+              // scaleDown supaya nominal besar tidak meluber
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  formatRupiah(_balance),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 44,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    height: 1.25,
                   ),
                 ),
               ),
-              const SizedBox(height: 112),
+              const SizedBox(height: 10),
+              const Text(
+                'Available Balance',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 104),
             ],
           ),
         ),

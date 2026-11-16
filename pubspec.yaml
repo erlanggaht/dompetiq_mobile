@@ -12,7 +12,6 @@ dependencies:
   flutter:
     sdk: flutter
   android_id: ^1.0.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

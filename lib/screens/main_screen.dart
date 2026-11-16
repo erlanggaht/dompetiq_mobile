@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/budget_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/profile_screen.dart';
@@ -14,20 +15,24 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  static const _pages = [
-    HomeScreen(),
-    TransactionsScreen(),
-    BudgetScreen(),
-    ProfileScreen(),
+  final _homeKey = GlobalKey<HomeScreenState>();
+
+  late final List<Widget> _pages = [
+    HomeScreen(key: _homeKey, onOpenProfile: () => _onSlotTap(4)),
+    const TransactionsScreen(),
+    const BudgetScreen(),
+    const ProfileScreen(),
   ];
 
   int _index = 0;
 
-  void _onSlotTap(int slot) {
+  Future<void> _onSlotTap(int slot) async {
     if (slot == 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add transaction coming soon')),
+      final saved = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
       );
+      if (saved == true) _homeKey.currentState?.reload();
       return;
     }
     setState(() => _index = slot < 2 ? slot : slot - 1);

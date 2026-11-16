@@ -10,6 +10,18 @@ String formatRupiah(int amount) {
   return amount < 0 ? '- $body' : body;
 }
 
+// 1250000 -> "1.250.000" (untuk input jumlah)
+String formatThousands(int value) {
+  final digits = value.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    final remaining = digits.length - i - 1;
+    buffer.write(digits[i]);
+    if (remaining > 0 && remaining % 3 == 0) buffer.write('.');
+  }
+  return buffer.toString();
+}
+
 const _months = [
   'Jan',
   'Feb',
