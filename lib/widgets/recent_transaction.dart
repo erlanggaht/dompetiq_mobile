@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/category_style.dart';
+import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/category_style.dart';
 
 class RecentTransactionWidget extends StatelessWidget {
   const RecentTransactionWidget({super.key, required this._transactions});
@@ -81,14 +82,17 @@ class RecentTransactionWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                item['amount'],
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: isIncome
-                      ? const Color(0xFF16A34A)
-                      : const Color(0xFFDC2626),
+              ValueListenableBuilder<bool>(
+                valueListenable: BalanceVisibility.visible,
+                builder: (context, visible, _) => Text(
+                  visible ? (item['amount'] as String) : '••••••',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: isIncome
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFFDC2626),
+                  ),
                 ),
               ),
               const SizedBox(width: 6),

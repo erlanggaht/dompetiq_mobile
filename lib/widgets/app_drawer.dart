@@ -5,13 +5,11 @@ import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
-import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
-  final VoidCallback onOpenProfile;
-
-  const AppDrawer({super.key, required this.onOpenProfile});
+  const AppDrawer({super.key});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -89,13 +87,10 @@ class _AppDrawerState extends State<AppDrawer> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
+                  ProfileAvatar(
+                    imageUrl: _avatar,
+                    name: _name.isEmpty ? 'DompetIQ' : _name,
                     radius: 34,
-                    backgroundColor: const Color(0xFFEDF1FF),
-                    backgroundImage: _avatar != null
-                        ? NetworkImage(_avatar!)
-                        : null,
-                    child: _avatar == null ? _initialText() : null,
                   ),
                 ],
               ),
@@ -117,19 +112,6 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 24),
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
-              _item(Icons.person_outline_rounded, 'Profile', () {
-                Navigator.pop(context);
-                widget.onOpenProfile();
-              }),
-              _item(Icons.lock_outline_rounded, 'Change PIN', () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChangePinScreen(),
-                  ),
-                );
-              }),
               const Spacer(),
               SizedBox(
                 height: 52,
@@ -159,46 +141,6 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  String get _initial {
-    final name = _name.trim();
-    return name.isEmpty ? 'D' : name[0].toUpperCase();
-  }
-
-  Widget _initialText() {
-    return Text(
-      _initial,
-      style: const TextStyle(
-        fontSize: 26,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF3B62FF),
-      ),
-    );
-  }
-
-  Widget _item(IconData icon, String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: const Color(0xFF1C1C1C)),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1C1C1C),
-              ),
-            ),
-          ],
         ),
       ),
     );

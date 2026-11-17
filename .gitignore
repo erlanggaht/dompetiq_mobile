@@ -52,3 +52,10 @@ env.json
 windows/flutter/ephemeral/
 windows/flutter/generated_plugin_registrant.*
 windows/flutter/generated_plugins.cmake
+
+opencode.json
+
+# Node (not part of Flutter project)
+node_modules/
+package.json
+package-lock.json

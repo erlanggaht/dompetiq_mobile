@@ -49,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
       key: _scaffoldKey,
       extendBody: true,
       backgroundColor: Colors.transparent,
-      drawer: AppDrawer(onOpenProfile: () => _onSlotTap(4)),
+      drawer: const AppDrawer(),
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: _buildBottomBar(),
     );

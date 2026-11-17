@@ -11,5 +11,10 @@ class UserService {
     return _profile = response.data['data'] as Map<String, dynamic>;
   }
 
+  static Future<Map<String, dynamic>> refresh() async {
+    _profile = null;
+    return me();
+  }
+
   static void clear() => _profile = null;
 }
