@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Halaman anggaran — belum dibangun.
 class BudgetScreen extends StatelessWidget {
   const BudgetScreen({super.key});
 

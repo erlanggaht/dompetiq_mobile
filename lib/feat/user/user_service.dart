@@ -1,7 +1,6 @@
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 
-// profil user cukup diambil sekali per sesi, dipakai drawer & home
 class UserService {
   static Map<String, dynamic>? _profile;
 

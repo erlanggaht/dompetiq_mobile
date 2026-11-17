@@ -43,7 +43,6 @@ class _AppDrawerState extends State<AppDrawer> {
       debugPrint(data.toString());
     } on DioException {
       debugPrint('Failed to load profile');
-      // drawer tetap bisa dipakai walau profil gagal dimuat
     }
   }
 

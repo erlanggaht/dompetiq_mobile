@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Satu TextField tersembunyi: backspace bekerja di semua posisi
 class PinInputField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;

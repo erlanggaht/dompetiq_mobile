@@ -11,7 +11,7 @@ class RegisterService {
     required String username,
     required String password,
     required String fullName,
-    required String age, // MM-DD-YYYY, format yang diminta backend
+    required String age,
     required String gender,
   }) async {
     try {
@@ -33,7 +33,7 @@ class RegisterService {
           'fullName': fullName,
           'age': age,
           'gender': gender,
-          'roleId': 2, // DEFAULT_ROLE, sama seperti web
+          'roleId': 2,
           'rekenings': [
             {'id': cash['id'], 'name': cash['name']},
           ],

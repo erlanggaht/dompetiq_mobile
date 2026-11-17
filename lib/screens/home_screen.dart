@@ -21,6 +21,8 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   int _balance = 0;
+  int _income = 0;
+  int _spending = 0;
   List<Map<String, dynamic>> _transactions = [];
   String? _avatar;
   bool _isLoading = true;
@@ -41,13 +43,32 @@ class HomeScreenState extends State<HomeScreen> {
         _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
       });
     } on DioException {
-      // avatar opsional, header tetap tampil tanpa foto
+      return;
     }
   }
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _loadSummary() async {
+    final now = DateTime.now();
+    final month = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    try {
+      final response = await DioClient.instance.get(
+        ApiRouteConfig.monthlySummary,
+        queryParameters: {'month': month},
+      );
+      final current = response.data['data']['current'];
+      if (!mounted) return;
+      setState(() {
+        _income = current['income'] as int;
+        _spending = current['spending'] as int;
+      });
+    } on DioException {
+      return;
+    }
   }
 
   void reload() => _loadData();
@@ -106,7 +127,11 @@ class HomeScreenState extends State<HomeScreen> {
             .toList();
         _isLoading = false;
       });
+      _loadSummary();
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        return;
+      }
       setState(() {
         _error =
             e.response?.data?['error']?['message'] ?? 'Failed to load data';
@@ -145,7 +170,6 @@ class HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(context),
-            // konten di bawah digeser -80 supaya kartu aksi overlap ke header
             Transform.translate(
               offset: const Offset(0, -80),
               child: Column(
@@ -267,7 +291,6 @@ class HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible(
-                      // scaleDown supaya nominal besar tidak meluber
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: ValueListenableBuilder<bool>(
@@ -315,7 +338,30 @@ class HomeScreenState extends State<HomeScreen> {
                   letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 104),
+              const SizedBox(height: 14),
+              ValueListenableBuilder<bool>(
+                valueListenable: BalanceVisibility.visible,
+                builder: (context, visible, _) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _SummaryItem(
+                      label: 'Income',
+                      amount: visible ? formatRupiah(_income) : '••••••',
+                    ),
+                    Container(
+                      width: 1,
+                      height: 28,
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      color: Colors.white24,
+                    ),
+                    _SummaryItem(
+                      label: 'Spending',
+                      amount: visible ? formatRupiah(_spending) : '••••••',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 108),
             ],
           ),
         ),
@@ -451,6 +497,34 @@ class _HeaderAction extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final String amount;
+
+  const _SummaryItem({required this.label, required this.amount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          amount,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }

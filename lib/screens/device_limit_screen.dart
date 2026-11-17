@@ -6,7 +6,6 @@ import 'package:flutter_application_1/screens/login_screen.dart';
 
 import '../../core/network/dio_client.dart';
 
-// dipakai saat kena limit 5 device; user dikenali lewat cookie _tmpUser
 class DeviceLimitScreen extends StatefulWidget {
   const DeviceLimitScreen({super.key});
 
@@ -47,7 +46,6 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
   }
 
   Future<void> _removeDevice(Map<String, dynamic> device) async {
-    // backend mencocokkan deviceId string, bukan id baris DB
     final deviceId = device['deviceId'] as String?;
     if (deviceId == null) return;
 
@@ -66,7 +64,6 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
     }
   }
 
-  // UA dari app berisi "undefined - undefined", jangan ditampilkan mentah
   String _deviceLabel(Map<String, dynamic> device, int index) {
     final parts = [device['browser'], device['os']].whereType<String>().where(
       (s) => s.isNotEmpty && !s.contains('undefined'),

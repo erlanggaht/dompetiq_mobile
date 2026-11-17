@@ -25,7 +25,6 @@ class DioClient {
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 10),
             headers: {'Content-Type': 'application/json'},
-            // web: cookie lintas origin hanya dikirim dengan withCredentials
             extra: {'withCredentials': true},
           ),
         )
@@ -44,7 +43,6 @@ class DioClient {
               handler.next(response);
             },
             onError: (error, handler) {
-              // _tmpUser datang di respons error maxDevice, onResponse tidak jalan untuk error
               if (error.response != null) {
                 _captureSession(error.response!);
               }

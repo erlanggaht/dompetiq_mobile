@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ikon & warna per kategori backend (nama enum: SALARY, FOOD, dst)
 const _categoryStyles = {
   'SALARY': (Icons.work_outline, Color(0xFF3B62FF)),
   'BUSINESS': (Icons.storefront_outlined, Color(0xFF6366F1)),
@@ -14,6 +13,5 @@ const _categoryStyles = {
   'OTHER_SPENDING': (Icons.receipt_outlined, Color(0xFF64748B)),
 };
 
-/// label kategori dari backend (mis. "Other spending") -> gaya ikonnya
 (IconData, Color)? categoryStyle(String name) =>
     _categoryStyles[name.toUpperCase().replaceAll(' ', '_')];

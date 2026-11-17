@@ -11,6 +11,7 @@ const _spending = Color(0xFFDC2626);
 const _ink = Color(0xFF111827);
 const _muted = Color(0xFF8A90A2);
 const _hairline = Color(0xFFEFF1F5);
+const _maxAmount = 2147483647;
 
 class AddTransactionScreen extends StatefulWidget {
   final String initialType;
@@ -155,6 +156,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     if (amount <= 0) {
       _showSnack('Amount must be greater than 0');
+      return;
+    }
+    if (amount > _maxAmount) {
+      _showSnack('Amount must be at most 2,147,483,647');
       return;
     }
     if (_categoryId == null) {
@@ -543,7 +548,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 }
 
-// selalu ada angka: kosong dikembalikan ke "0"
 class _ThousandsFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

@@ -7,7 +7,6 @@ import '../../core/network/dio_client.dart';
 class SecurityService {
   final Dio _dio = DioClient.instance;
 
-  // backend menuntut password akun HANYA jika user sudah punya PIN
   Future<bool> getPinStatus() async {
     try {
       final response = await _dio.get(ApiRouteConfig.securityPin);

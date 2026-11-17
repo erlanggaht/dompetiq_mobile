@@ -7,7 +7,6 @@ import 'package:flutter_application_1/screens/profile_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
 import 'package:flutter_application_1/widgets/app_drawer.dart';
 
-// Slot tengah (+) adalah aksi, bukan halaman
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -48,7 +47,6 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      // extendBody: warna halaman menyambung di sekitar pill
       extendBody: true,
       backgroundColor: Colors.transparent,
       drawer: AppDrawer(onOpenProfile: () => _onSlotTap(4)),
@@ -144,7 +142,6 @@ class _AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // heightFactor: cegah Center mengisi seluruh tinggi Scaffold
     return Expanded(
       child: Center(
         heightFactor: 1,

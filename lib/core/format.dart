@@ -10,7 +10,6 @@ String formatRupiah(int amount) {
   return amount < 0 ? '- $body' : body;
 }
 
-// 1250000 -> "1.250.000" (untuk input jumlah)
 String formatThousands(int value) {
   final digits = value.abs().toString();
   final buffer = StringBuffer();

@@ -9,7 +9,6 @@ class DeviceId {
   static const _storage = FlutterSecureStorage();
   static String? _cached;
 
-  // ANDROID_ID tetap sama saat install ulang, jadi tidak memakan slot device baru
   static Future<String> get() async {
     if (_cached != null) return _cached!;
     if (defaultTargetPlatform == TargetPlatform.android) {

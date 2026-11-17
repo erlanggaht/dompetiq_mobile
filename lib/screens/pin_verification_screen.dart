@@ -28,7 +28,6 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
   final _pinService = PinService();
   final _pinController = TextEditingController();
   bool _isLoading = false;
-  // 429: percobaan PIN dikunci sementara
   String? _lockMessage;
   Timer? _countdownTimer;
 
@@ -42,7 +41,6 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
   @override
   void initState() {
     super.initState();
-    // countdown perlu rebuild tiap detik
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });

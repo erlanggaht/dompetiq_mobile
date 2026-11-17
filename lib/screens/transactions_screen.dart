@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Halaman daftar transaksi lengkap (list, filter, search) — belum dibangun.
 class TransactionsScreen extends StatelessWidget {
   const TransactionsScreen({super.key});
 

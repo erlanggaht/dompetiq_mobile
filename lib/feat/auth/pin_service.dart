@@ -27,12 +27,10 @@ class PinService {
         data: {'challengeToken': challengeToken, 'pin': pin},
       );
     } on DioException catch (e) {
-      // limit device juga dicek di completeLogin
       final codeError = e.response?.data?['error']?['codeError'];
       if (codeError == 'INVALID_DEVICE_LIMIT') throw MaxDeviceException();
       final message =
           e.response?.data?['error']?['message'] ?? 'Verifikasi PIN gagal';
-      // 429 dari limiter maupun batas attempt
       if (e.response?.statusCode == 429) throw PinLockedException(message);
       throw Exception(message);
     }

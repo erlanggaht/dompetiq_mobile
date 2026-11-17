@@ -14,10 +14,11 @@ class ApiRouteConfig {
   static const String rekeningMe = '/general/rekenings/me';
   static const String securityPin = '/settings/security/pin';
   static const String usersMe = '/users/me';
+  static const String monthlySummary = '/monthly-summary';
 }
 
 class StorageConfig {
-  static const String baseUrl = 'https://nos.jkt-1.neo.id/dompetiq';
+  static const String baseUrl = '${String.fromEnvironment('S3_URL')}/dompetiq';
 
   static String? avatarUrl(String? path) {
     if (path == null || path.isEmpty) return null;

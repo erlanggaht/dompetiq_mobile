@@ -44,7 +44,7 @@ class AuthService {
     try {
       await _dio.post(ApiRouteConfig.logout, data: {'deviceId': deviceId});
     } on DioException {
-      // sesi lokal tetap dihapus meski request gagal
+      return;
     } finally {
       UserService.clear();
       await DioClient.clearSession();
