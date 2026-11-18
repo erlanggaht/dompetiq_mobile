@@ -41,12 +41,18 @@ String formatDateShort(DateTime date) {
   return '$d ${_months[date.month - 1]} ${date.year}';
 }
 
+String formatUsername(String? username, {String fallback = 'dompetiq'}) {
+  final value = username?.trim().replaceFirst(RegExp(r'^@+'), '') ?? '';
+  return '@${value.isEmpty ? fallback : value}';
+}
+
 String formatDayLabel(DateTime date, {DateTime? now}) {
   final current = now ?? DateTime.now().toUtc().add(const Duration(hours: 7));
   final today = DateTime(current.year, current.month, current.day);
   final day = DateTime(date.year, date.month, date.day);
   final diff = today.difference(day).inDays;
-  if (diff == 0) return 'Today';
-  if (diff == 1) return 'Yesterday';
+  final short = '${date.day} ${_months[date.month - 1]}';
+  if (diff == 0) return 'Today, $short';
+  if (diff == 1) return 'Yesterday, $short';
   return formatDateShort(date);
 }

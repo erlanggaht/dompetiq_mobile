@@ -19,10 +19,18 @@ class ApiRouteConfig {
 
 class StorageConfig {
   static const String baseUrl = '${String.fromEnvironment('S3_URL')}/dompetiq';
+  static int _avatarVersion = DateTime.now().millisecondsSinceEpoch;
 
   static String? avatarUrl(String? path) {
     if (path == null || path.isEmpty) return null;
-    if (path.startsWith('http')) return path;
-    return '$baseUrl${path.startsWith('/') ? '' : '/'}$path';
+    if (path.startsWith('http')) {
+      return '$path${path.contains('?') ? '&' : '?'}v=$_avatarVersion';
+    }
+    final url = '$baseUrl${path.startsWith('/') ? '' : '/'}$path';
+    return '$url?v=$_avatarVersion';
+  }
+
+  static void refreshAvatarCache() {
+    _avatarVersion = DateTime.now().millisecondsSinceEpoch;
   }
 }

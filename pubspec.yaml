@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   android_id: ^1.0.0
+  image_picker: ^1.2.4
 dev_dependencies:
   integration_test:
     sdk: flutter

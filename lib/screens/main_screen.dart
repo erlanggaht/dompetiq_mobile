@@ -33,7 +33,7 @@ class _MainScreenState extends State<MainScreen> {
       onOpenProfile: () => _onSlotTap(4),
     ),
     const BudgetScreen(),
-    const ProfileScreen(),
+    ProfileScreen(onBack: () => _onSlotTap(0)),
   ];
 
   int _index = 0;

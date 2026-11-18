@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/feat/settings/security_service.dart';
+import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/pin_input.dart';
 
 class ChangePinScreen extends StatefulWidget {
@@ -100,129 +101,146 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: _loadingStatus
-          ? const Center(child: CircularProgressIndicator())
-          : _loadError != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(_loadError!, style: const TextStyle(color: Colors.red)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadStatus,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            )
-          : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _hasPin ? 'Change PIN' : 'Activate PIN',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 26,
-                        color: Color(0xFF1C1C1C),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _hasPin
-                          ? 'Confirm your account password, then set a new PIN.'
-                          : 'Set a 4-digit PIN for extra security at login.',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF87879D),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    if (_hasPin) ...[
-                      const Text(
-                        'Account Password',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1C1C1C),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          hintText: 'Your account password',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    const Text(
-                      'New PIN',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1C),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    PinInputField(controller: _newPinController),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Confirm New PIN',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1C),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    PinInputField(controller: _confirmPinController),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 49,
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _handleSave,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B62FF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                _hasPin ? 'Save New PIN' : 'Activate PIN',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const AppPageHeader(title: 'Change PIN'),
+            Expanded(child: _buildContent()),
+          ],
+        ),
+      ),
     );
   }
+
+  Widget _buildContent() {
+    if (_loadingStatus) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_loadError != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_loadError!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            OutlinedButton(onPressed: _loadStatus, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFEAECF0)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF4FF),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: const Icon(
+                    Icons.shield_outlined,
+                    color: Color(0xFF3B62FF),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    _hasPin
+                        ? 'Update your 4-digit PIN to keep your account secure.'
+                        : 'Set a 4-digit PIN for extra security at login.',
+                    style: const TextStyle(
+                      color: Color(0xFF667085),
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          _FieldLabel('New PIN'),
+          const SizedBox(height: 12),
+          PinInputField(controller: _newPinController),
+          const SizedBox(height: 24),
+          _FieldLabel('Confirm New PIN'),
+          const SizedBox(height: 12),
+          PinInputField(controller: _confirmPinController),
+          if (_hasPin) ...[
+            const SizedBox(height: 28),
+            _FieldLabel('Account Password'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                hintText: 'Your account password',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+          const SizedBox(height: 34),
+          SizedBox(
+            height: 50,
+            child: FilledButton(
+              onPressed: _isSaving ? null : _handleSave,
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF3B62FF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      _hasPin ? 'Save New PIN' : 'Activate PIN',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+
+  const _FieldLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: const TextStyle(
+      color: Color(0xFF344054),
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    ),
+  );
 }

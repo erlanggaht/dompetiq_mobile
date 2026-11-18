@@ -94,8 +94,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Today'), findsNothing);
-    expect(find.text('Yesterday'), findsNothing);
+    expect(find.textContaining('Today'), findsNothing);
+    expect(find.textContaining('Yesterday'), findsNothing);
     expect(find.text('17 Nov 2026'), findsNWidgets(2));
     expect(find.byType(Dismissible), findsNothing);
   });
@@ -117,8 +117,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Yesterday'), findsOneWidget);
+    expect(find.textContaining('Today'), findsOneWidget);
+    expect(find.textContaining('Yesterday'), findsOneWidget);
     expect(find.text('Food and drink'), findsNWidgets(2));
   });
 

@@ -5,7 +5,9 @@ import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
+import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -45,24 +47,7 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Future<void> _signOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
+    if (!await confirmLogout(context, actionLabel: 'Sign out')) return;
 
     setState(() => _isSigningOut = true);
     await AuthService().logout(deviceId: await DeviceId.get());
@@ -71,6 +56,30 @@ class _AppDrawerState extends State<AppDrawer> {
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
       (route) => false,
+    );
+  }
+
+  void _comingSoon(String title) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('$title is not available yet')));
+  }
+
+  void _openPin() {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ChangePinScreen()),
+    );
+  }
+
+  void _showAbout() {
+    Navigator.pop(context);
+    showAboutDialog(
+      context: context,
+      applicationName: 'DompetIQ',
+      applicationVersion: '1.0.0',
+      applicationLegalese: 'Personal finance management',
     );
   }
 
@@ -112,6 +121,26 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 24),
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
+              _DrawerItem(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                onTap: () => _comingSoon('Settings'),
+              ),
+              _DrawerItem(
+                icon: Icons.security_outlined,
+                title: 'Security',
+                onTap: _openPin,
+              ),
+              _DrawerItem(
+                icon: Icons.help_outline_rounded,
+                title: 'Help & Support',
+                onTap: () => _comingSoon('Help & Support'),
+              ),
+              _DrawerItem(
+                icon: Icons.info_outline_rounded,
+                title: 'About DompetIQ',
+                onTap: _showAbout,
+              ),
               const Spacer(),
               SizedBox(
                 height: 52,
@@ -143,6 +172,39 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: const Color(0xFF667085), size: 22),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Color(0xFF1C1C1C),
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: Color(0xFF667085),
+      ),
+      onTap: onTap,
     );
   }
 }
