@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/format.dart';
-import 'package:flutter_application_1/widgets/profile_avatar.dart';
+import 'package:flutter_application_1/widgets/app_top_bar.dart';
 
 class HomeHeader extends StatelessWidget {
-  final String? avatarUrl;
-  final String name;
   final int balance;
   final int income;
   final int spending;
@@ -15,8 +13,6 @@ class HomeHeader extends StatelessWidget {
 
   const HomeHeader({
     super.key,
-    required this.avatarUrl,
-    required this.name,
     required this.balance,
     required this.income,
     required this.spending,
@@ -40,69 +36,12 @@ class HomeHeader extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Column(
             children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: onOpenMenu,
-                      icon: const Icon(
-                        Icons.menu_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'DompetIQ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: GestureDetector(
-                      onTap: onOpenProfile,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ProfileAvatar(
-                            imageUrl: avatarUrl,
-                            name: name,
-                            radius: 19,
-                            backgroundColor: Colors.white,
-                            initialFontSize: 16,
-                          ),
-                          Positioned(
-                            right: 0,
-                            top: 2,
-                            child: Container(
-                              width: 11,
-                              height: 11,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF22C55E),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              AppTopBar(
+                title: 'DompetIQ',
+                onOpenMenu: onOpenMenu,
+                onOpenProfile: onOpenProfile,
+                foreground: Colors.white,
+                avatarBackground: Colors.white,
               ),
               const SizedBox(height: 36),
               const Text(

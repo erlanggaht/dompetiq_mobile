@@ -29,6 +29,8 @@ class _MainScreenState extends State<MainScreen> {
     TransactionsScreen(
       key: _transactionsKey,
       onChanged: (_) => _homeKey.currentState?.reload(),
+      onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+      onOpenProfile: () => _onSlotTap(4),
     ),
     const BudgetScreen(),
     const ProfileScreen(),

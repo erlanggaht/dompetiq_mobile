@@ -36,8 +36,6 @@ class HomeScreenState extends State<HomeScreen> {
   int _income = 0;
   int _spending = 0;
   List<Map<String, dynamic>> _transactions = [];
-  String? _avatar;
-  String _name = '';
   bool _isLoading = true;
   bool _hasLoaded = false;
   int _loadSeq = 0;
@@ -47,23 +45,16 @@ class HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
-    _loadAvatar();
+    _loadProfile();
   }
 
-  Future<void> _loadAvatar({bool refresh = false}) async {
+  Future<void> _loadProfile({bool refresh = false}) async {
     try {
       final data = refresh
           ? await UserService.refresh()
           : await UserService.me();
       if (!mounted) return;
       await BalanceVisibility.useAccount(data['id']);
-      if (!mounted) return;
-      setState(() {
-        _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
-        _name =
-            (data['fullName'] as String?) ??
-            (data['username'] as String? ?? '');
-      });
     } catch (_) {
       return;
     }
@@ -111,7 +102,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   void reload() {
     _loadData();
-    _loadAvatar(refresh: true);
+    _loadProfile(refresh: true);
   }
 
   Future<void> _openTransactionForm(String type) async {
@@ -242,8 +233,6 @@ class HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               HomeHeader(
-                avatarUrl: _avatar,
-                name: _name.isEmpty ? 'DompetIQ' : _name,
                 balance: _balance,
                 income: _income,
                 spending: _spending,

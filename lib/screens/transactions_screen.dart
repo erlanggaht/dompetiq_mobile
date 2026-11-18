@@ -6,6 +6,7 @@ import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/transaction_detail_screen.dart';
+import 'package:flutter_application_1/widgets/app_top_bar.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 const _filters = ['All', 'Income', 'Spending'];
@@ -19,8 +20,15 @@ const _sheetShape = RoundedRectangleBorder(
 
 class TransactionsScreen extends StatefulWidget {
   final ValueChanged<String>? onChanged;
+  final VoidCallback? onOpenMenu;
+  final VoidCallback? onOpenProfile;
 
-  const TransactionsScreen({super.key, this.onChanged});
+  const TransactionsScreen({
+    super.key,
+    this.onChanged,
+    this.onOpenMenu,
+    this.onOpenProfile,
+  });
 
   @override
   State<TransactionsScreen> createState() => TransactionsScreenState();
@@ -214,14 +222,11 @@ class TransactionsScreenState extends State<TransactionsScreen> {
           children: [
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
-              child: const Text(
-                'Transactions',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: _ink,
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+              child: AppTopBar(
+                title: 'Transactions',
+                onOpenMenu: widget.onOpenMenu,
+                onOpenProfile: widget.onOpenProfile,
               ),
             ),
             Container(
