@@ -12,4 +12,11 @@ void main() {
   test('formatDateShort renders dd MMM yyyy', () {
     expect(formatDateShort(DateTime(2026, 11, 10)), '10 Nov 2026');
   });
+
+  test('formatDayLabel names today and yesterday', () {
+    final now = DateTime(2026, 11, 17, 9);
+    expect(formatDayLabel(DateTime(2026, 11, 17, 23), now: now), 'Today');
+    expect(formatDayLabel(DateTime(2026, 11, 16, 1), now: now), 'Yesterday');
+    expect(formatDayLabel(DateTime(2026, 11, 10), now: now), '10 Nov 2026');
+  });
 }

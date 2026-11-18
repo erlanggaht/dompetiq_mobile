@@ -15,8 +15,13 @@ const _maxAmount = 2147483647;
 
 class AddTransactionScreen extends StatefulWidget {
   final String initialType;
+  final Map<String, dynamic>? transaction;
 
-  const AddTransactionScreen({super.key, this.initialType = 'Income'});
+  const AddTransactionScreen({
+    super.key,
+    this.initialType = 'Income',
+    this.transaction,
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -43,6 +48,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void initState() {
     super.initState();
     _type = widget.initialType;
+    final tx = widget.transaction;
+    if (tx != null) {
+      _type = (tx['type'] as String?) ?? widget.initialType;
+      _amountController.text = formatThousands((tx['amount'] as num).toInt());
+      _amountController.selection = TextSelection.collapsed(
+        offset: _amountController.text.length,
+      );
+      _descriptionController.text = (tx['note'] as String?) ?? '';
+      _categoryId = tx['categoryUser']?['category']?['id'] as int?;
+      _rekeningUserId = tx['rekeningUserId'] as int?;
+      final raw = tx['transactionDate'] as String?;
+      if (raw != null) {
+        _date = DateTime.parse(raw).toUtc().add(const Duration(hours: 7));
+      }
+    }
     _load();
   }
 
@@ -177,14 +197,27 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     setState(() => _isSaving = true);
     try {
-      await _service.create(
-        type: _type,
-        amount: amount,
-        categoryId: _categoryId!,
-        rekeningUserId: _rekeningUserId!,
-        transactionDate: _dateText,
-        description: description,
-      );
+      final transactionId = widget.transaction?['transactionId'] as String?;
+      if (transactionId == null) {
+        await _service.create(
+          type: _type,
+          amount: amount,
+          categoryId: _categoryId!,
+          rekeningUserId: _rekeningUserId!,
+          transactionDate: _dateText,
+          description: description,
+        );
+      } else {
+        await _service.update(
+          transactionId: transactionId,
+          type: _type,
+          amount: amount,
+          categoryId: _categoryId!,
+          rekeningUserId: _rekeningUserId!,
+          transactionDate: _dateText,
+          description: description,
+        );
+      }
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
@@ -226,7 +259,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             ),
                           )
                         : Text(
-                            _type == 'Income' ? 'Add Income' : 'Add Spending',
+                            widget.transaction != null
+                                ? 'Save Changes'
+                                : _type == 'Income'
+                                ? 'Add Income'
+                                : 'Add Spending',
                             style: const TextStyle(
                               fontSize: 15.5,
                               fontWeight: FontWeight.w600,
@@ -277,9 +314,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Add Transaction',
-              style: TextStyle(
+            Text(
+              widget.transaction != null
+                  ? 'Edit Transaction'
+                  : 'Add Transaction',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: _ink,

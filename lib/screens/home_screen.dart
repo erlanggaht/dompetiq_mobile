@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/config.dart';
-import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
+import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
+import 'package:flutter_application_1/screens/transaction_detail_screen.dart';
 import 'package:flutter_application_1/widgets/home_action_card.dart';
 import 'package:flutter_application_1/widgets/home_header.dart';
 import 'package:flutter_application_1/widgets/home_transaction_section.dart';
@@ -16,8 +18,14 @@ const _wib = Duration(hours: 7);
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenProfile;
+  final VoidCallback? onTransactionSaved;
 
-  const HomeScreen({super.key, this.onOpenMenu, this.onOpenProfile});
+  const HomeScreen({
+    super.key,
+    this.onOpenMenu,
+    this.onOpenProfile,
+    this.onTransactionSaved,
+  });
 
   @override
   State<HomeScreen> createState() => HomeScreenState();
@@ -66,6 +74,22 @@ class HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _deleteTransaction(String transactionId) async {
+    setState(
+      () =>
+          _transactions.removeWhere((t) => t['transactionId'] == transactionId),
+    );
+    try {
+      await TransactionService().delete(transactionId);
+      widget.onTransactionSaved?.call();
+      _loadData();
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack(e.toString().replaceFirst('Exception: ', ''));
+      _loadData();
+    }
+  }
+
   Future<void> _loadSummary(int seq) async {
     final now = DateTime.now().toUtc().add(_wib);
     final month = '${now.year}-${now.month.toString().padLeft(2, '0')}';
@@ -90,13 +114,6 @@ class HomeScreenState extends State<HomeScreen> {
     _loadAvatar(refresh: true);
   }
 
-  String _categoryTitle(String name) => name.isEmpty
-      ? 'Transaction'
-      : name
-            .toLowerCase()
-            .replaceAll('_', ' ')
-            .replaceFirstMapped(RegExp(r'^[a-z]'), (m) => m[0]!.toUpperCase());
-
   Future<void> _openTransactionForm(String type) async {
     final saved = await Navigator.push<bool>(
       context,
@@ -104,7 +121,24 @@ class HomeScreenState extends State<HomeScreen> {
         builder: (context) => AddTransactionScreen(initialType: type),
       ),
     );
-    if (saved == true && mounted) _loadData();
+    if (saved == true && mounted) {
+      _loadData();
+      widget.onTransactionSaved?.call();
+    }
+  }
+
+  Future<void> _openDetail(String transactionId) async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            TransactionDetailScreen(transactionId: transactionId),
+      ),
+    );
+    if (changed == true && mounted) {
+      _loadData();
+      widget.onTransactionSaved?.call();
+    }
   }
 
   Future<void> _loadData() async {
@@ -128,20 +162,7 @@ class HomeScreenState extends State<HomeScreen> {
           .cast<Map<String, dynamic>>();
       final transactions = (results[1].data['data'] as List)
           .cast<Map<String, dynamic>>()
-          .map((r) {
-            final isIncome = r['type'] == 'Income';
-            final category = r['categoryUser']?['category']?['name'] ?? '';
-            final note = (r['note'] as String?) ?? '';
-            final date = DateTime.parse(r['transactionDate']).toUtc().add(_wib);
-            return {
-              'title': note.isNotEmpty ? note : _categoryTitle(category),
-              'date': formatDateShort(date),
-              'amount':
-                  '${isIncome ? '+' : '-'} ${formatRupiah((r['amount'] as num).toInt())}',
-              'isIncome': isIncome,
-              'category': category,
-            };
-          })
+          .map(mapTransaction)
           .toList();
       setState(() {
         _balance = accounts.fold(
@@ -240,7 +261,11 @@ class HomeScreenState extends State<HomeScreen> {
                       onTransfer: () => _showSnack('Transfer form coming soon'),
                     ),
                     const SizedBox(height: 32),
-                    HomeTransactionSection(transactions: _transactions),
+                    HomeTransactionSection(
+                      transactions: _transactions,
+                      onTap: _openDetail,
+                      onDelete: _deleteTransaction,
+                    ),
                     const SizedBox(height: 96),
                   ],
                 ),

@@ -4,8 +4,15 @@ import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 class HomeTransactionSection extends StatelessWidget {
   final List<Map<String, dynamic>> transactions;
+  final ValueChanged<String>? onTap;
+  final ValueChanged<String>? onDelete;
 
-  const HomeTransactionSection({super.key, required this.transactions});
+  const HomeTransactionSection({
+    super.key,
+    required this.transactions,
+    this.onTap,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +41,12 @@ class HomeTransactionSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        RecentTransactionWidget(transactions: transactions),
+        RecentTransactionWidget(
+          transactions: transactions,
+          onTap: onTap,
+          onDelete: onDelete,
+          grouped: false,
+        ),
       ],
     );
   }

@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final _homeKey = GlobalKey<HomeScreenState>();
+  final _transactionsKey = GlobalKey<TransactionsScreenState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final List<Widget> _pages = [
@@ -23,8 +24,12 @@ class _MainScreenState extends State<MainScreen> {
       key: _homeKey,
       onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
       onOpenProfile: () => _onSlotTap(4),
+      onTransactionSaved: () => _transactionsKey.currentState?.reload(),
     ),
-    const TransactionsScreen(),
+    TransactionsScreen(
+      key: _transactionsKey,
+      onChanged: (_) => _homeKey.currentState?.reload(),
+    ),
     const BudgetScreen(),
     const ProfileScreen(),
   ];
@@ -37,7 +42,10 @@ class _MainScreenState extends State<MainScreen> {
         context,
         MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
       );
-      if (saved == true) _homeKey.currentState?.reload();
+      if (saved == true) {
+        _homeKey.currentState?.reload();
+        _transactionsKey.currentState?.reload();
+      }
       return;
     }
     setState(() => _index = slot < 2 ? slot : slot - 1);
@@ -78,6 +86,7 @@ class _MainScreenState extends State<MainScreen> {
             onTap: () => _onSlotTap(0),
           ),
           _NavSlot(
+            key: const ValueKey('tab-transactions'),
             icon: _index == 1
                 ? Icons.receipt_long_rounded
                 : Icons.receipt_long_outlined,
@@ -111,6 +120,7 @@ class _NavSlot extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NavSlot({
+    super.key,
     required this.icon,
     required this.active,
     required this.onTap,
