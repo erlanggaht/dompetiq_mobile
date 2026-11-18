@@ -27,3 +27,11 @@ String _categoryTitle(String name) => name.isEmpty
           .toLowerCase()
           .replaceAll('_', ' ')
           .replaceFirstMapped(RegExp(r'^[a-z]'), (m) => m[0]!.toUpperCase());
+
+List<Map<String, dynamic>> appendUnique(
+  List<Map<String, dynamic>> current,
+  List<Map<String, dynamic>> incoming,
+) {
+  final seen = current.map((e) => e['transactionId']).toSet();
+  return [...current, ...incoming.where((e) => seen.add(e['transactionId']))];
+}

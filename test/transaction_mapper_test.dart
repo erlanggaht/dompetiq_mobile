@@ -67,4 +67,19 @@ void main() {
     expect((item['dateTime'] as DateTime).hour, 0);
     expect((item['dateTime'] as DateTime).minute, 30);
   });
+
+  test('appendUnique keeps order and drops duplicated rows', () {
+    final merged = appendUnique(
+      [
+        {'transactionId': 'A'},
+        {'transactionId': 'B'},
+      ],
+      [
+        {'transactionId': 'B'},
+        {'transactionId': 'C'},
+      ],
+    );
+
+    expect(merged.map((e) => e['transactionId']), ['A', 'B', 'C']);
+  });
 }

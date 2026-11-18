@@ -9,6 +9,13 @@ String apiDate(DateTime value) {
   return '$m-$d-${value.year}';
 }
 
+class TransactionPage {
+  final List<Map<String, dynamic>> items;
+  final int total;
+
+  const TransactionPage(this.items, this.total);
+}
+
 class TransactionService {
   final Dio _dio = DioClient.instance;
 
@@ -36,8 +43,9 @@ class TransactionService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> records({
-    int pageSize = 50,
+  Future<TransactionPage> records({
+    int page = 1,
+    int pageSize = 20,
     String? type,
     String? search,
     int? rekeningUserId,
@@ -49,6 +57,7 @@ class TransactionService {
       final response = await _dio.get(
         ApiRouteConfig.financialRecord,
         queryParameters: {
+          'page': page,
           'pageSize': pageSize,
           'qtype': ?type,
           'q': ?(search == null || search.isEmpty ? null : search),
@@ -58,7 +67,11 @@ class TransactionService {
           'qtransactionDateEnd': ?(end == null ? null : apiDate(end)),
         },
       );
-      return (response.data['data'] as List).cast<Map<String, dynamic>>();
+      final meta = response.data['meta'] as Map<String, dynamic>? ?? {};
+      return TransactionPage(
+        (response.data['data'] as List).cast<Map<String, dynamic>>(),
+        (meta['totalRowCount'] as num?)?.toInt() ?? 0,
+      );
     } on DioException catch (e) {
       throw Exception(_message(e, 'Failed to load transactions'));
     }

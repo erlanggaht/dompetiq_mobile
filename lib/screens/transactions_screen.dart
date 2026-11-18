@@ -29,6 +29,7 @@ class TransactionsScreen extends StatefulWidget {
 class TransactionsScreenState extends State<TransactionsScreen> {
   final _service = TransactionService();
   final _searchController = TextEditingController();
+  final _scroll = ScrollController();
   Timer? _debounce;
   List<Map<String, dynamic>> _items = [];
   List<Map<String, dynamic>> _accounts = [];
@@ -37,14 +38,20 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   int? _rekeningUserId;
   int? _categoryId;
   DateTimeRange? _range;
+  int _page = 1;
+  int _total = 0;
   bool _isLoading = true;
   bool _hasLoaded = false;
+  bool _loadingMore = false;
   String? _error;
   int _loadSeq = 0;
+
+  bool get _hasMore => _items.length < _total;
 
   @override
   void initState() {
     super.initState();
+    _scroll.addListener(_onScroll);
     _load();
     _loadOptions();
   }
@@ -53,10 +60,18 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
   void reload() => _load();
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 300) {
+      _loadMore();
+    }
+  }
 
   Future<void> _openDetail(String transactionId) async {
     final changed = await Navigator.push<bool>(
@@ -108,6 +123,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   void _apply() {
     if (!mounted) return;
     setState(() => _hasLoaded = false);
+    if (_scroll.hasClients) _scroll.jumpTo(0);
     _load();
   }
 
@@ -125,8 +141,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
       });
     }
     try {
-      final rows = await _service.records(
-        pageSize: 50,
+      final page = await _service.records(
         type: _filter == 'All' ? null : _filter,
         search: _searchController.text.trim(),
         rekeningUserId: _rekeningUserId,
@@ -136,7 +151,10 @@ class TransactionsScreenState extends State<TransactionsScreen> {
       );
       if (!mounted || seq != _loadSeq) return;
       setState(() {
-        _items = rows.map(mapTransaction).toList();
+        _items = page.items.map(mapTransaction).toList();
+        _total = page.total;
+        _page = 1;
+        _loadingMore = false;
         _hasLoaded = true;
         _isLoading = false;
         _error = null;
@@ -153,6 +171,36 @@ class TransactionsScreenState extends State<TransactionsScreen> {
         _error = message;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || _isLoading || !_hasMore) return;
+    final seq = _loadSeq;
+    setState(() => _loadingMore = true);
+    try {
+      final page = await _service.records(
+        page: _page + 1,
+        type: _filter == 'All' ? null : _filter,
+        search: _searchController.text.trim(),
+        rekeningUserId: _rekeningUserId,
+        categoryId: _categoryId,
+        start: _range?.start,
+        end: _range?.end,
+      );
+      if (!mounted || seq != _loadSeq) return;
+      setState(() {
+        _items = appendUnique(_items, page.items.map(mapTransaction).toList());
+        _total = page.total;
+        _page += 1;
+        _loadingMore = false;
+      });
+    } catch (e) {
+      if (!mounted || seq != _loadSeq) return;
+      setState(() => _loadingMore = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
     }
   }
 
@@ -533,6 +581,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
+        controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 16, bottom: 32),
         children: [
@@ -541,6 +590,17 @@ class TransactionsScreenState extends State<TransactionsScreen> {
             onTap: _openDetail,
             onDelete: _deleteTransaction,
           ),
+          if (_loadingMore)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
         ],
       ),
     );
