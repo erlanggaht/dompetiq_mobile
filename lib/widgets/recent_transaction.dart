@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
-import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/widgets/confirm_delete_dialog.dart';
 
@@ -27,7 +27,7 @@ class RecentTransactionWidget extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.receipt_long_outlined, size: 44, color: Colors.grey),
+              Icon(PhosphorIconsRegular.receipt, size: 44, color: Colors.grey),
               SizedBox(height: 8),
               Text(
                 'No transactions yet',
@@ -87,14 +87,6 @@ class RecentTransactionWidget extends StatelessWidget {
         );
       }
       final bool isIncome = item['isIncome'];
-      final category = (item['category'] as String?) ?? '';
-      final style = categoryStyle(category);
-      final icon =
-          style?.$1 ??
-          (isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded);
-      final color =
-          style?.$2 ??
-          (isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626));
 
       final transactionId = item['transactionId'] as String;
       final row = InkWell(
@@ -103,16 +95,6 @@ class RecentTransactionWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 21),
-              ),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,12 +135,6 @@ class RecentTransactionWidget extends StatelessWidget {
                         : const Color(0xFFDC2626),
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 22,
-                color: Color(0xFFB9BDD0),
               ),
             ],
           ),
@@ -224,7 +200,7 @@ class _DeleteBackground extends StatelessWidget {
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+          Icon(PhosphorIconsRegular.trash, color: Colors.white, size: 20),
           SizedBox(width: 6),
           Text(
             'Delete',

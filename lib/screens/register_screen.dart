@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/feat/auth/register_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
@@ -165,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Date of Birth',
                     border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.calendar_today),
+                    suffixIcon: Icon(PhosphorIconsRegular.calendar),
                     hintText: 'MM-DD-YYYY',
                   ),
                   child: Text(

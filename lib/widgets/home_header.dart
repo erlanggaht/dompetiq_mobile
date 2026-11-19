@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/format.dart';
@@ -136,7 +137,9 @@ class _BalanceRow extends StatelessWidget {
               child: IconButton(
                 onPressed: () => BalanceVisibility.toggle(),
                 icon: Icon(
-                  visible ? Icons.lock_open_rounded : Icons.lock_rounded,
+                  visible
+                      ? PhosphorIconsRegular.lockOpen
+                      : PhosphorIconsRegular.lock,
                 ),
                 iconSize: 20,
                 color: Colors.white70,

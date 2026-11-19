@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class AppPageHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onBack;
+  final bool showBack;
 
-  const AppPageHeader({super.key, required this.title, this.onBack});
+  const AppPageHeader({
+    super.key,
+    required this.title,
+    this.onBack,
+    this.showBack = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +20,15 @@ class AppPageHeader extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              onPressed: onBack ?? () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_rounded),
-              color: const Color(0xFF101828),
+          if (showBack)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: onBack ?? () => Navigator.pop(context),
+                icon: const Icon(PhosphorIconsRegular.arrowLeft),
+                color: const Color(0xFF101828),
+              ),
             ),
-          ),
           Text(
             title,
             style: const TextStyle(

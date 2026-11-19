@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -144,7 +145,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           ),
                                         )
                                       : const Icon(
-                                          Icons.camera_alt_outlined,
+                                          PhosphorIconsRegular.camera,
                                           color: Colors.white,
                                           size: 15,
                                         ),

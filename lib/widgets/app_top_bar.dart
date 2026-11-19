@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -63,7 +64,7 @@ class _AppTopBarState extends State<AppTopBar> {
                 padding: EdgeInsets.zero,
                 onPressed: widget.onOpenMenu,
                 icon: Icon(
-                  Icons.menu_rounded,
+                  PhosphorIconsRegular.list,
                   color: widget.foreground,
                   size: 26,
                 ),

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
-import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/edit_profile_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/screens/settings_screen.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final VoidCallback? onBack;
+  final VoidCallback? onDataReset;
 
-  const ProfileScreen({super.key, this.onBack});
+  const ProfileScreen({super.key, this.onDataReset});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -89,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.fromLTRB(36, 0, 36, 120),
           child: Column(
             children: [
-              AppPageHeader(title: 'Profile', onBack: widget.onBack),
+              const AppPageHeader(title: 'Profile', showBack: false),
               const SizedBox(height: 28),
               ProfileAvatar(
                 imageUrl: _avatar,
@@ -135,26 +136,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 34),
               const Divider(color: Color(0xFFE4E7EC), height: 1),
               _ProfileMenuTile(
-                icon: Icons.settings_outlined,
+                icon: PhosphorIconsRegular.gear,
                 title: 'Settings',
-                onTap: _comingSoon,
-              ),
-              _ProfileMenuTile(
-                icon: Icons.lock_outline_rounded,
-                title: 'Change Password',
-                onTap: _comingSoon,
-              ),
-              _ProfileMenuTile(
-                icon: Icons.pin_outlined,
-                title: 'Change PIN',
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ChangePinScreen()),
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        SettingsScreen(onDataReset: widget.onDataReset),
+                  ),
                 ),
               ),
               const Divider(color: Color(0xFFE4E7EC), height: 1),
               _ProfileMenuTile(
-                icon: Icons.logout_rounded,
+                icon: PhosphorIconsRegular.signOut,
                 title: 'Log out',
                 danger: true,
                 onTap: _isSigningOut ? null : _logout,
@@ -170,12 +164,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _comingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('This feature is not available yet')),
     );
   }
 }
@@ -210,7 +198,7 @@ class _ProfileMenuTile extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      trailing: trailing ?? Icon(Icons.chevron_right_rounded, color: color),
+      trailing: trailing ?? Icon(PhosphorIconsRegular.caretRight, color: color),
       onTap: onTap,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
@@ -33,7 +34,7 @@ class HomeTransactionSection extends StatelessWidget {
               ),
               Spacer(),
               Icon(
-                Icons.arrow_forward_rounded,
+                PhosphorIconsRegular.arrowRight,
                 size: 22,
                 color: Color(0xFF1C1C1C),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/budget_screen.dart';
@@ -33,7 +34,12 @@ class _MainScreenState extends State<MainScreen> {
       onOpenProfile: () => _onSlotTap(4),
     ),
     const BudgetScreen(),
-    ProfileScreen(onBack: () => _onSlotTap(0)),
+    ProfileScreen(
+      onDataReset: () {
+        _homeKey.currentState?.reload();
+        _transactionsKey.currentState?.reload();
+      },
+    ),
   ];
 
   int _index = 0;
@@ -59,7 +65,12 @@ class _MainScreenState extends State<MainScreen> {
       key: _scaffoldKey,
       extendBody: true,
       backgroundColor: Colors.transparent,
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(
+        onDataReset: () {
+          _homeKey.currentState?.reload();
+          _transactionsKey.currentState?.reload();
+        },
+      ),
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: _buildBottomBar(),
     );
@@ -83,30 +94,32 @@ class _MainScreenState extends State<MainScreen> {
       child: Row(
         children: [
           _NavSlot(
-            icon: _index == 0 ? Icons.home_rounded : Icons.home_outlined,
+            icon: _index == 0
+                ? PhosphorIconsBold.house
+                : PhosphorIconsRegular.house,
             active: _index == 0,
             onTap: () => _onSlotTap(0),
           ),
           _NavSlot(
             key: const ValueKey('tab-transactions'),
             icon: _index == 1
-                ? Icons.receipt_long_rounded
-                : Icons.receipt_long_outlined,
+                ? PhosphorIconsBold.receipt
+                : PhosphorIconsRegular.receipt,
             active: _index == 1,
             onTap: () => _onSlotTap(1),
           ),
           _AddButton(onTap: () => _onSlotTap(2)),
           _NavSlot(
             icon: _index == 2
-                ? Icons.pie_chart_rounded
-                : Icons.pie_chart_outline_rounded,
+                ? PhosphorIconsBold.chartPie
+                : PhosphorIconsRegular.chartPie,
             active: _index == 2,
             onTap: () => _onSlotTap(3),
           ),
           _NavSlot(
             icon: _index == 3
-                ? Icons.person_rounded
-                : Icons.person_outline_rounded,
+                ? PhosphorIconsBold.user
+                : PhosphorIconsRegular.user,
             active: _index == 3,
             onTap: () => _onSlotTap(4),
           ),
@@ -168,7 +181,11 @@ class _AddButton extends StatelessWidget {
             child: const SizedBox(
               width: 50,
               height: 50,
-              child: Icon(Icons.add_rounded, color: Colors.white, size: 30),
+              child: Icon(
+                PhosphorIconsRegular.plus,
+                color: Colors.white,
+                size: 30,
+              ),
             ),
           ),
         ),

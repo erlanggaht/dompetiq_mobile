@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/format.dart';
@@ -310,12 +312,20 @@ class TransactionsScreenState extends State<TransactionsScreen> {
         fillColor: _field,
         hintText: 'Search note or amount',
         hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
-        prefixIcon: const Icon(Icons.search_rounded, size: 19, color: _muted),
+        prefixIcon: const Icon(
+          PhosphorIconsRegular.magnifyingGlass,
+          size: 19,
+          color: _muted,
+        ),
         prefixIconConstraints: const BoxConstraints(minWidth: 38),
         suffixIcon: _searchController.text.isEmpty
             ? null
             : IconButton(
-                icon: const Icon(Icons.close_rounded, size: 17, color: _muted),
+                icon: const Icon(
+                  PhosphorIconsRegular.x,
+                  size: 17,
+                  color: _muted,
+                ),
                 onPressed: () {
                   _searchController.clear();
                   _apply();
@@ -353,7 +363,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
           isLabelVisible: count > 0,
           backgroundColor: _accent,
           child: Icon(
-            Icons.tune_rounded,
+            PhosphorIconsRegular.slidersHorizontal,
             size: 20,
             color: count > 0 ? _accent : _muted,
           ),
@@ -486,7 +496,11 @@ class TransactionsScreenState extends State<TransactionsScreen> {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, size: 20, color: _muted),
+            const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: 20,
+              color: _muted,
+            ),
           ],
         ),
       ),
@@ -557,7 +571,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
     return ListTile(
       title: Text(title),
       trailing: selected
-          ? const Icon(Icons.check_rounded, color: _accent)
+          ? const Icon(PhosphorIconsRegular.check, color: _accent)
           : null,
       onTap: () => Navigator.pop(context, value),
     );

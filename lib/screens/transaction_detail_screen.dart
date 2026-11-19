@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/category_style.dart';
@@ -184,7 +185,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: _hairline),
             ),
-            child: const Icon(Icons.arrow_back_rounded, color: _ink, size: 20),
+            child: const Icon(
+              PhosphorIconsRegular.arrowLeft,
+              color: _ink,
+              size: 20,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -205,7 +210,9 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     final style = categoryStyle(_category);
     final icon =
         style?.$1 ??
-        (_isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded);
+        (_isIncome
+            ? PhosphorIconsRegular.trendUp
+            : PhosphorIconsRegular.trendDown);
 
     return Container(
       padding: const EdgeInsets.all(20),

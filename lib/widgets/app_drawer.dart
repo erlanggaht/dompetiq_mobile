@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
@@ -7,11 +8,14 @@ import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/screens/settings_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
-  const AppDrawer({super.key});
+  final VoidCallback? onDataReset;
+
+  const AppDrawer({super.key, this.onDataReset});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -122,22 +126,31 @@ class _AppDrawerState extends State<AppDrawer> {
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
               _DrawerItem(
-                icon: Icons.settings_outlined,
+                icon: PhosphorIconsRegular.gear,
                 title: 'Settings',
-                onTap: () => _comingSoon('Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          SettingsScreen(onDataReset: widget.onDataReset),
+                    ),
+                  );
+                },
               ),
               _DrawerItem(
-                icon: Icons.security_outlined,
+                icon: PhosphorIconsRegular.shieldCheck,
                 title: 'Security',
                 onTap: _openPin,
               ),
               _DrawerItem(
-                icon: Icons.help_outline_rounded,
+                icon: PhosphorIconsRegular.question,
                 title: 'Help & Support',
                 onTap: () => _comingSoon('Help & Support'),
               ),
               _DrawerItem(
-                icon: Icons.info_outline_rounded,
+                icon: PhosphorIconsRegular.info,
                 title: 'About DompetIQ',
                 onTap: _showAbout,
               ),
@@ -199,10 +212,6 @@ class _DrawerItem extends StatelessWidget {
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: Color(0xFF667085),
       ),
       onTap: onTap,
     );

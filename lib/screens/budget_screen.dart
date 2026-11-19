@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class BudgetScreen extends StatelessWidget {
   const BudgetScreen({super.key});
@@ -12,7 +13,7 @@ class BudgetScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.pie_chart_outline_rounded,
+              PhosphorIconsRegular.chartPie,
               size: 56,
               color: Colors.grey.shade400,
             ),

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
@@ -119,7 +120,11 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                     padding: EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        Icon(Icons.devices, size: 56, color: Color(0xFF3B62FF)),
+                        Icon(
+                          PhosphorIconsRegular.devices,
+                          size: 56,
+                          color: Color(0xFF3B62FF),
+                        ),
                         SizedBox(height: 12),
                         Text(
                           'Device Limit Reached',
@@ -165,8 +170,8 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                             children: [
                               Icon(
                                 isCurrent
-                                    ? Icons.phone_android
-                                    : Icons.devices_other,
+                                    ? PhosphorIconsRegular.deviceMobile
+                                    : PhosphorIconsRegular.devices,
                                 color: const Color(0xFF3B62FF),
                               ),
                               const SizedBox(width: 12),
@@ -201,7 +206,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons.logout,
+                                  PhosphorIconsRegular.signOut,
                                   color: Colors.red,
                                 ),
                                 onPressed: isCurrent

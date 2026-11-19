@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/auth/forgot_password_service.dart';
@@ -84,7 +85,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons.mark_email_read_outlined,
+                      PhosphorIconsRegular.envelopeSimple,
                       size: 56,
                       color: Color(0xFF3B62FF),
                     ),

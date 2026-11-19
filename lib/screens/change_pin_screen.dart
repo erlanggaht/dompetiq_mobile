@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/feat/settings/security_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
@@ -152,7 +153,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: const Icon(
-                    Icons.shield_outlined,
+                    PhosphorIconsRegular.shieldCheck,
                     color: Color(0xFF3B62FF),
                   ),
                 ),

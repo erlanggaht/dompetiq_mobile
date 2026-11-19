@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/core/format.dart';
@@ -42,6 +43,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   List<Map<String, dynamic>> _rekenings = [];
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _showAmountPad = true;
   String? _error;
 
   @override
@@ -63,11 +65,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _date = DateTime.parse(raw).toUtc().add(const Duration(hours: 7));
       }
     }
+    _amountController.addListener(_onAmountChanged);
     _load();
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     _descriptionController.dispose();
     _amountFocus.dispose();
@@ -78,6 +82,44 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _onAmountChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _setQuickAmount(int amount) {
+    _setAmountText(amount);
+    _amountFocus.requestFocus();
+  }
+
+  void _setAmountText(int amount) {
+    final text = formatThousands(amount);
+    _amountController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  void _appendAmountDigit(String digit) {
+    final current = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final next = current == '0' ? digit : '$current$digit';
+    final amount = int.tryParse(next);
+    if (amount == null || amount > _maxAmount) return;
+    _setAmountText(amount);
+  }
+
+  void _removeAmountDigit() {
+    final current = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final next = current.length <= 1
+        ? '0'
+        : current.substring(0, current.length - 1);
+    _setAmountText(int.parse(next));
+  }
+
+  void _closeAmountPad() {
+    setState(() => _showAmountPad = false);
+    _amountFocus.unfocus();
   }
 
   Future<void> _load() async {
@@ -156,7 +198,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ListTile(
                 title: Text(account['name'] as String),
                 trailing: _rekeningUserId == account['rekeningUserId']
-                    ? const Icon(Icons.check_rounded, color: _accent)
+                    ? const Icon(PhosphorIconsRegular.check, color: _accent)
                     : null,
                 onTap: () =>
                     Navigator.pop(context, account['rekeningUserId'] as int),
@@ -232,8 +274,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(child: _buildBody()),
-      bottomNavigationBar: _error != null
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(child: _buildBody()),
+            if (_showAmountPad && !_isLoading && _error == null)
+              _AmountKeypad(
+                onDigit: _appendAmountDigit,
+                onBackspace: _removeAmountDigit,
+                onQuickAmount: _setQuickAmount,
+                onDone: _closeAmountPad,
+              ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _error != null || (_showAmountPad && !_isLoading)
           ? null
           : SafeArea(
               child: Padding(
@@ -310,7 +365,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               borderRadius: BorderRadius.circular(10),
               child: const Padding(
                 padding: EdgeInsets.all(6),
-                child: Icon(Icons.arrow_back_rounded, color: _ink, size: 22),
+                child: Icon(
+                  PhosphorIconsRegular.arrowLeft,
+                  color: _ink,
+                  size: 22,
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -365,10 +424,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               child: TextField(
                 controller: _amountController,
                 focusNode: _amountFocus,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (_) => _noteFocus.requestFocus(),
+                readOnly: true,
+                showCursor: true,
+                keyboardType: TextInputType.none,
+                onTap: () {
+                  setState(() => _showAmountPad = true);
+                  _amountFocus.requestFocus();
+                },
                 inputFormatters: [_ThousandsFormatter()],
                 cursorColor: _accent,
                 style: const TextStyle(
@@ -428,10 +490,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 child: TextField(
                   controller: _descriptionController,
                   focusNode: _noteFocus,
+                  onTap: () => setState(() => _showAmountPad = false),
                   maxLength: 255,
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _save(),
+                  onSubmitted: (_) => _noteFocus.unfocus(),
+                  onEditingComplete: _noteFocus.unfocus,
                   cursorColor: _accent,
                   textAlign: TextAlign.right,
                   style: const TextStyle(
@@ -464,8 +528,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget _typeTab(String label, String value, Color color) {
     final selected = _type == value;
     final icon = value == 'Income'
-        ? Icons.trending_up_rounded
-        : Icons.trending_down_rounded;
+        ? PhosphorIconsRegular.trendUp
+        : PhosphorIconsRegular.trendDown;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() {
@@ -510,7 +574,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final id = category['id'] as int;
     final name = category['name'] as String;
     final selected = _categoryId == id;
-    final icon = categoryStyle(name)?.$1 ?? Icons.label_outline;
+    final icon = categoryStyle(name)?.$1 ?? PhosphorIconsRegular.tag;
 
     return GestureDetector(
       onTap: () => setState(() => _categoryId = id),
@@ -576,11 +640,119 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
             ),
             const Icon(
-              Icons.chevron_right_rounded,
+              PhosphorIconsRegular.caretRight,
               size: 20,
               color: Color(0xFFC3C8D6),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AmountKeypad extends StatelessWidget {
+  final ValueChanged<String> onDigit;
+  final VoidCallback onBackspace;
+  final ValueChanged<int> onQuickAmount;
+  final VoidCallback onDone;
+
+  const _AmountKeypad({
+    required this.onDigit,
+    required this.onBackspace,
+    required this.onQuickAmount,
+    required this.onDone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F4F8),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE4E7EC)),
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _quickButton(50000),
+              _quickButton(100000),
+              _quickButton(500000),
+              _quickButton(1000000),
+            ],
+          ),
+          const SizedBox(height: 10),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.2,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            children: [
+              for (final digit in ['1', '2', '3', '4', '5', '6', '7', '8', '9'])
+                _key(digit, () => onDigit(digit)),
+              _key(null, onBackspace, icon: PhosphorIconsRegular.backspace),
+              _key('0', () => onDigit('0')),
+              _key(null, onDone, icon: PhosphorIconsBold.check, color: _accent),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickButton(int amount) {
+    return InkWell(
+      onTap: () => onQuickAmount(amount),
+      borderRadius: BorderRadius.circular(9),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(color: const Color(0xFFE4E7EC)),
+        ),
+        child: Text(
+          'Rp ${formatThousands(amount)}',
+          style: const TextStyle(
+            color: _muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _key(
+    String? label,
+    VoidCallback onTap, {
+    IconData? icon,
+    Color color = _ink,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Center(
+          child: icon == null
+              ? Text(
+                  label!,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                )
+              : Icon(icon, color: color, size: 20),
         ),
       ),
     );

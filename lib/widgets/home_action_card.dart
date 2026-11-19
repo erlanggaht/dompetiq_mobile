@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeActionCard extends StatelessWidget {
   final VoidCallback onIncome;
@@ -32,21 +33,21 @@ class HomeActionCard extends StatelessWidget {
         child: Row(
           children: [
             _ActionItem(
-              icon: Icons.trending_up_rounded,
+              icon: PhosphorIconsFill.trendUp,
               label: 'Income',
               color: const Color(0xFF16A34A),
               onTap: onIncome,
             ),
             _divider(),
             _ActionItem(
-              icon: Icons.trending_down_rounded,
+              icon: PhosphorIconsFill.trendDown,
               label: 'Spending',
               color: const Color(0xFFDC2626),
               onTap: onSpending,
             ),
             _divider(),
             _ActionItem(
-              icon: Icons.swap_horiz_rounded,
+              icon: PhosphorIconsFill.arrowsLeftRight,
               label: 'Transfer',
               color: const Color(0xFF3B62FF),
               onTap: onTransfer,
@@ -91,7 +92,7 @@ class _ActionItem extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icon, color: color, size: 22),
                 ),
