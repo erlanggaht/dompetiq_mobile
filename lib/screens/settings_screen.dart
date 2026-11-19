@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/feat/settings/delete_account_service.dart';
 import 'package:flutter_application_1/feat/settings/reset_data_service.dart';
+import 'package:flutter_application_1/feat/user/user_service.dart';
+import 'package:flutter_application_1/screens/change_password_screen.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
+import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -16,28 +21,59 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _resetData(BuildContext context) async {
+    final confirmationController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset data?'),
-        content: const Text(
-          'This will permanently delete your transactions, budgets, transfers, and saved tool data. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFD92D20),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final canConfirm = confirmationController.text.trim() == 'reset data';
+          return AlertDialog(
+            title: const Text('Reset data?'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'This will permanently delete your transactions, budgets, transfers, and saved tool data. This action cannot be undone.',
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Type "reset data" to continue',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: confirmationController,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(
+                    hintText: 'reset data',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
             ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Reset data'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFD92D20),
+                ),
+                onPressed: canConfirm
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                child: const Text('Reset data'),
+              ),
+            ],
+          );
+        },
       ),
     );
+    confirmationController.dispose();
     if (confirmed != true || !context.mounted) return;
 
     showDialog<void>(
@@ -60,6 +96,88 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirmationController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final canConfirm =
+              confirmationController.text.trim() == 'delete account';
+          return AlertDialog(
+            title: const Text('Delete account?'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'This will permanently delete your account and all its data: transactions, rekening, categories, cards, budgets, and profile. This action cannot be undone.',
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Type "delete account" to continue',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: confirmationController,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(
+                    hintText: 'delete account',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFD92D20),
+                ),
+                onPressed: canConfirm
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                child: const Text('Delete account'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    confirmationController.dispose();
+    if (confirmed != true || !context.mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      await DeleteAccountService().delete();
+      UserService.clear();
+      await DioClient.clearSession();
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (_) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,17 +190,16 @@ class SettingsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 18, 24, 40),
                 children: [
-                  const _SettingsSectionTitle('Account'),
-                  _SettingsTile(
-                    icon: PhosphorIconsRegular.user,
-                    title: 'Account',
-                    onTap: () => _comingSoon(context, 'Account settings'),
-                  ),
                   const _SettingsSectionTitle('Security'),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.lock,
                     title: 'Change Password',
-                    onTap: () => _comingSoon(context, 'Change Password'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ChangePasswordScreen(),
+                      ),
+                    ),
                   ),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.password,
@@ -106,6 +223,12 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Reset Data',
                     danger: true,
                     onTap: () => _resetData(context),
+                  ),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.userCircleMinus,
+                    title: 'Delete Account',
+                    danger: true,
+                    onTap: () => _deleteAccount(context),
                   ),
                   const _SettingsSectionTitle('About'),
                   _SettingsTile(
@@ -160,26 +283,25 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = danger ? const Color(0xFFD92D20) : const Color(0xFF101828);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEAECF0)),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: color,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          minTileHeight: 60,
+          leading: Icon(icon, color: color),
+          title: Text(
+            title,
+            style: TextStyle(
+              color: color,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
           ),
+          trailing: Icon(PhosphorIconsRegular.caretRight, color: color),
+          onTap: onTap,
         ),
-        trailing: Icon(PhosphorIconsRegular.caretRight, color: color),
-        onTap: onTap,
-      ),
+        const Divider(color: Color(0xFFE4E7EC), height: 1),
+      ],
     );
   }
 }

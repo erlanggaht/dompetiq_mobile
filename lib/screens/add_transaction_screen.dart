@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -43,7 +44,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   List<Map<String, dynamic>> _rekenings = [];
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _showAmountPad = true;
+  bool _showAmountPad = !kIsWeb;
   String? _error;
 
   @override
@@ -424,13 +425,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               child: TextField(
                 controller: _amountController,
                 focusNode: _amountFocus,
-                readOnly: true,
-                showCursor: true,
-                keyboardType: TextInputType.none,
-                onTap: () {
-                  setState(() => _showAmountPad = true);
-                  _amountFocus.requestFocus();
-                },
+                showCursor: !kIsWeb,
+                readOnly: !kIsWeb,
+                keyboardType: kIsWeb
+                    ? TextInputType.number
+                    : TextInputType.none,
+                textInputAction: kIsWeb
+                    ? TextInputAction.next
+                    : TextInputAction.none,
+                onTap: kIsWeb
+                    ? null
+                    : () {
+                        setState(() => _showAmountPad = true);
+                        _amountFocus.requestFocus();
+                      },
+                onSubmitted: kIsWeb ? (_) => _noteFocus.requestFocus() : null,
                 inputFormatters: [_ThousandsFormatter()],
                 cursorColor: _accent,
                 style: const TextStyle(
@@ -450,6 +459,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ],
         ),
         const SizedBox(height: 20),
+        if (kIsWeb) _QuickAmountRow(onQuickAmount: _setQuickAmount),
+        if (kIsWeb) const SizedBox(height: 20),
         const Divider(height: 1, color: _hairline),
         const SizedBox(height: 22),
         const Text(
@@ -755,6 +766,27 @@ class _AmountKeypad extends StatelessWidget {
               : Icon(icon, color: color, size: 20),
         ),
       ),
+    );
+  }
+}
+
+class _QuickAmountRow extends StatelessWidget {
+  final ValueChanged<int> onQuickAmount;
+
+  const _QuickAmountRow({required this.onQuickAmount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final amount in [50000, 100000, 500000, 1000000])
+          ActionChip(
+            label: Text('Rp ${formatThousands(amount)}'),
+            onPressed: () => onQuickAmount(amount),
+          ),
+      ],
     );
   }
 }

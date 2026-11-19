@@ -13,6 +13,11 @@ void main() {
     expect(formatDateShort(DateTime(2026, 11, 10)), '10 Nov 2026');
   });
 
+  test('parseApiDate reads MM-DD-YYYY birth dates', () {
+    expect(parseApiDate('08-18-2000'), DateTime(2000, 8, 18));
+    expect(parseApiDate('25'), isNull);
+  });
+
   test('formatUsername avoids duplicate at signs', () {
     expect(formatUsername('@erlangga'), '@erlangga');
     expect(formatUsername(''), '@dompetiq');

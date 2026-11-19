@@ -13,7 +13,9 @@ class ApiRouteConfig {
   static const String categoryMe = '/general/categorys/me';
   static const String rekeningMe = '/general/rekenings/me';
   static const String securityPin = '/settings/security/pin';
+  static const String changePassword = '/settings/security/password';
   static const String resetData = '/settings/reset';
+  static const String deleteAccount = '/settings/delete-my-account';
   static const String usersMe = '/users/me';
   static const String monthlySummary = '/monthly-summary';
 }

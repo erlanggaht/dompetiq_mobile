@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/feat/settings/security_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
@@ -136,44 +135,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFEAECF0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF4FF),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(
-                    PhosphorIconsRegular.shieldCheck,
-                    color: Color(0xFF3B62FF),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    _hasPin
-                        ? 'Update your 4-digit PIN to keep your account secure.'
-                        : 'Set a 4-digit PIN for extra security at login.',
-                    style: const TextStyle(
-                      color: Color(0xFF667085),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 18),
           _FieldLabel('New PIN'),
           const SizedBox(height: 12),
           PinInputField(controller: _newPinController),

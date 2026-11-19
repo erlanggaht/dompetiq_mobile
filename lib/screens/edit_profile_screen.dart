@@ -4,6 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
+import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/feat/transaction/transaction_service.dart'
+    show apiDate;
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
@@ -71,6 +74,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<void> _pickBirthDate() async {
+    final initial = parseApiDate(_age.text) ?? DateTime(2000);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked == null) return;
+    setState(() => _age.text = apiDate(picked));
   }
 
   Future<void> _pickAvatar() async {
@@ -188,13 +203,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(width: 14),
                           Expanded(
                             child: _field(
-                              'Age',
+                              'Birth date',
                               _age,
-                              keyboard: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              validator: _ageValidator,
+                              readOnly: true,
+                              muted: false,
+                              suffixIcon: const Icon(
+                                PhosphorIconsRegular.calendar,
+                                size: 18,
+                                color: Color(0xFF3B62FF),
+                              ),
+                              onTap: _pickBirthDate,
+                              validator: _birthDateValidator,
                             ),
                           ),
                         ],
@@ -204,12 +223,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         'Email',
                         _email,
                         keyboard: TextInputType.emailAddress,
+                        readOnly: true,
                         validator: _emailValidator,
                       ),
                       const SizedBox(height: 14),
                       _field(
                         'Username',
                         _username,
+                        readOnly: true,
                         validator: _usernameValidator,
                       ),
                       const SizedBox(height: 32),
@@ -258,14 +279,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     TextInputType? keyboard,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
+    bool readOnly = false,
+    bool? muted,
+    Widget? suffixIcon,
+    VoidCallback? onTap,
   }) {
+    final isMuted = muted ?? readOnly;
     return TextFormField(
       controller: controller,
       keyboardType: keyboard,
       inputFormatters: inputFormatters,
       validator: validator,
+      readOnly: readOnly,
+      onTap: onTap,
+      style: TextStyle(
+        color: isMuted ? const Color(0xFF98A2B3) : const Color(0xFF101828),
+      ),
       decoration: InputDecoration(
         labelText: label,
+        filled: isMuted,
+        fillColor: isMuted ? const Color(0xFFF2F4F7) : null,
+        suffixIcon: suffixIcon,
         border: const OutlineInputBorder(),
       ),
     );
@@ -314,12 +348,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return null;
   }
 
-  String? _ageValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Age is required';
-    final age = int.tryParse(value.trim());
-    if (age == null || age < 1 || age > 120) {
-      return 'Enter an age between 1 and 120';
-    }
+  String? _birthDateValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Birth date is required';
+    if (parseApiDate(value) == null) return 'Use MM-DD-YYYY format';
     return null;
   }
 }
