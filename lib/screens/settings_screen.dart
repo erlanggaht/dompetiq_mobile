@@ -44,7 +44,6 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 TextField(
                   controller: confirmationController,
-                  autofocus: true,
                   textCapitalization: TextCapitalization.characters,
                   onChanged: (_) => setDialogState(() {}),
                   decoration: const InputDecoration(
@@ -73,7 +72,9 @@ class SettingsScreen extends StatelessWidget {
         },
       ),
     );
-    confirmationController.dispose();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => confirmationController.dispose(),
+    );
     if (confirmed != true || !context.mounted) return;
 
     showDialog<void>(
@@ -85,8 +86,8 @@ class SettingsScreen extends StatelessWidget {
       await ResetDataService().reset();
       if (!context.mounted) return;
       Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context, true);
       onDataReset?.call();
-      Navigator.pop(context, true);
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -121,7 +122,6 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 TextField(
                   controller: confirmationController,
-                  autofocus: true,
                   textCapitalization: TextCapitalization.characters,
                   onChanged: (_) => setDialogState(() {}),
                   decoration: const InputDecoration(
@@ -150,7 +150,9 @@ class SettingsScreen extends StatelessWidget {
         },
       ),
     );
-    confirmationController.dispose();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => confirmationController.dispose(),
+    );
     if (confirmed != true || !context.mounted) return;
 
     showDialog<void>(

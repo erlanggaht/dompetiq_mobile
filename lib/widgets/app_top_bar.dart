@@ -1,54 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:flutter_application_1/core/config.dart';
-import 'package:flutter_application_1/feat/user/user_service.dart';
-import 'package:flutter_application_1/widgets/profile_avatar.dart';
-
-class AppTopBar extends StatefulWidget {
+class AppTopBar extends StatelessWidget {
   final String title;
   final VoidCallback? onOpenMenu;
-  final VoidCallback? onOpenProfile;
+  final VoidCallback? onOpenNotifications;
   final Color foreground;
-  final Color avatarBackground;
+  final bool hasUnreadNotifications;
 
   const AppTopBar({
     super.key,
     required this.title,
     this.onOpenMenu,
-    this.onOpenProfile,
+    this.onOpenNotifications,
     this.foreground = const Color(0xFF1C1C1C),
-    this.avatarBackground = const Color(0xFFEDF1FF),
+    this.hasUnreadNotifications = false,
   });
-
-  @override
-  State<AppTopBar> createState() => _AppTopBarState();
-}
-
-class _AppTopBarState extends State<AppTopBar> {
-  String? _avatar;
-  String _name = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    try {
-      final data = await UserService.me();
-      if (!mounted) return;
-      setState(() {
-        _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
-        _name =
-            (data['fullName'] as String?) ??
-            (data['username'] as String? ?? '');
-      });
-    } catch (_) {
-      return;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,41 +29,45 @@ class _AppTopBarState extends State<AppTopBar> {
               height: 44,
               child: IconButton(
                 padding: EdgeInsets.zero,
-                onPressed: widget.onOpenMenu,
+                onPressed: onOpenMenu,
                 icon: Icon(
                   PhosphorIconsRegular.list,
-                  color: widget.foreground,
+                  color: foreground,
                   size: 26,
                 ),
               ),
             ),
             const Spacer(),
-            GestureDetector(
-              onTap: widget.onOpenProfile,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  ProfileAvatar(
-                    imageUrl: _avatar,
-                    name: _name,
-                    radius: 19,
-                    backgroundColor: widget.avatarBackground,
-                    initialFontSize: 16,
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 2,
-                    child: Container(
-                      width: 11,
-                      height: 11,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF22C55E),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: onOpenNotifications,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      PhosphorIconsRegular.bell,
+                      color: foreground,
+                      size: 24,
                     ),
-                  ),
-                ],
+                    if (hasUnreadNotifications)
+                      Positioned(
+                        right: -1,
+                        top: -1,
+                        child: Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -104,12 +75,12 @@ class _AppTopBarState extends State<AppTopBar> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 52),
           child: Text(
-            widget.title,
+            title,
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: widget.foreground,
+              color: foreground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,

@@ -17,14 +17,16 @@ const _wib = Duration(hours: 7);
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onOpenMenu;
-  final VoidCallback? onOpenProfile;
+  final VoidCallback? onOpenNotifications;
   final VoidCallback? onTransactionSaved;
+  final bool hasUnreadNotifications;
 
   const HomeScreen({
     super.key,
     this.onOpenMenu,
-    this.onOpenProfile,
+    this.onOpenNotifications,
     this.onTransactionSaved,
+    this.hasUnreadNotifications = false,
   });
 
   @override
@@ -237,7 +239,8 @@ class HomeScreenState extends State<HomeScreen> {
                 income: _income,
                 spending: _spending,
                 onOpenMenu: widget.onOpenMenu,
-                onOpenProfile: widget.onOpenProfile,
+                onOpenNotifications: widget.onOpenNotifications,
+                hasUnreadNotifications: widget.hasUnreadNotifications,
               ),
               Transform.translate(
                 offset: const Offset(0, -80),

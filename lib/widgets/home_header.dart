@@ -10,7 +10,8 @@ class HomeHeader extends StatelessWidget {
   final int income;
   final int spending;
   final VoidCallback? onOpenMenu;
-  final VoidCallback? onOpenProfile;
+  final VoidCallback? onOpenNotifications;
+  final bool hasUnreadNotifications;
 
   const HomeHeader({
     super.key,
@@ -18,7 +19,8 @@ class HomeHeader extends StatelessWidget {
     required this.income,
     required this.spending,
     this.onOpenMenu,
-    this.onOpenProfile,
+    this.onOpenNotifications,
+    this.hasUnreadNotifications = false,
   });
 
   @override
@@ -40,9 +42,9 @@ class HomeHeader extends StatelessWidget {
               AppTopBar(
                 title: 'DompetIQ',
                 onOpenMenu: onOpenMenu,
-                onOpenProfile: onOpenProfile,
+                onOpenNotifications: onOpenNotifications,
                 foreground: Colors.white,
-                avatarBackground: Colors.white,
+                hasUnreadNotifications: hasUnreadNotifications,
               ),
               const SizedBox(height: 36),
               const Text(

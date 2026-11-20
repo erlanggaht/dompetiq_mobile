@@ -6,8 +6,8 @@ import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
-import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/screens/report_screen.dart';
 import 'package:flutter_application_1/screens/settings_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
@@ -69,14 +69,6 @@ class _AppDrawerState extends State<AppDrawer> {
         .showSnackBar(SnackBar(content: Text('$title is not available yet')));
   }
 
-  void _openPin() {
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ChangePinScreen()),
-    );
-  }
-
   void _showAbout() {
     Navigator.pop(context);
     showAboutDialog(
@@ -126,6 +118,17 @@ class _AppDrawerState extends State<AppDrawer> {
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
               _DrawerItem(
+                icon: PhosphorIconsRegular.chartPie,
+                title: 'Monthly Report',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReportScreen()),
+                  );
+                },
+              ),
+              _DrawerItem(
                 icon: PhosphorIconsRegular.gear,
                 title: 'Settings',
                 onTap: () {
@@ -138,11 +141,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   );
                 },
-              ),
-              _DrawerItem(
-                icon: PhosphorIconsRegular.shieldCheck,
-                title: 'Security',
-                onTap: _openPin,
               ),
               _DrawerItem(
                 icon: PhosphorIconsRegular.question,

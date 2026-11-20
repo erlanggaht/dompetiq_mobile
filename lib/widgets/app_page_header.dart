@@ -5,12 +5,14 @@ class AppPageHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onBack;
   final bool showBack;
+  final Widget? trailing;
 
   const AppPageHeader({
     super.key,
     required this.title,
     this.onBack,
     this.showBack = true,
+    this.trailing,
   });
 
   @override
@@ -37,6 +39,8 @@ class AppPageHeader extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+          if (trailing != null)
+            Align(alignment: Alignment.centerRight, child: trailing!),
         ],
       ),
     );

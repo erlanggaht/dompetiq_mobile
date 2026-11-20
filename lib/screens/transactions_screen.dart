@@ -23,13 +23,15 @@ const _sheetShape = RoundedRectangleBorder(
 class TransactionsScreen extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onOpenMenu;
-  final VoidCallback? onOpenProfile;
+  final VoidCallback? onOpenNotifications;
+  final bool hasUnreadNotifications;
 
   const TransactionsScreen({
     super.key,
     this.onChanged,
     this.onOpenMenu,
-    this.onOpenProfile,
+    this.onOpenNotifications,
+    this.hasUnreadNotifications = false,
   });
 
   @override
@@ -228,7 +230,8 @@ class TransactionsScreenState extends State<TransactionsScreen> {
               child: AppTopBar(
                 title: 'Transactions',
                 onOpenMenu: widget.onOpenMenu,
-                onOpenProfile: widget.onOpenProfile,
+                onOpenNotifications: widget.onOpenNotifications,
+                hasUnreadNotifications: widget.hasUnreadNotifications,
               ),
             ),
             Container(

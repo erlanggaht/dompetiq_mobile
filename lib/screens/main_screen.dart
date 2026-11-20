@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/budget_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
+import 'package:flutter_application_1/screens/notifications_screen.dart';
 import 'package:flutter_application_1/screens/profile_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
 import 'package:flutter_application_1/widgets/app_drawer.dart';
@@ -18,29 +20,39 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final _homeKey = GlobalKey<HomeScreenState>();
   final _transactionsKey = GlobalKey<TransactionsScreenState>();
+  final _budgetKey = GlobalKey<BudgetScreenState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _hasUnread = false;
 
-  late final List<Widget> _pages = [
-    HomeScreen(
-      key: _homeKey,
-      onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
-      onOpenProfile: () => _onSlotTap(4),
-      onTransactionSaved: () => _transactionsKey.currentState?.reload(),
-    ),
-    TransactionsScreen(
-      key: _transactionsKey,
-      onChanged: (_) => _homeKey.currentState?.reload(),
-      onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
-      onOpenProfile: () => _onSlotTap(4),
-    ),
-    const BudgetScreen(),
-    ProfileScreen(
-      onDataReset: () {
-        _homeKey.currentState?.reload();
-        _transactionsKey.currentState?.reload();
-      },
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadUnread();
+  }
+
+  void _reloadAll() {
+    _homeKey.currentState?.reload();
+    _transactionsKey.currentState?.reload();
+    _budgetKey.currentState?.reload();
+  }
+
+  Future<void> _loadUnread() async {
+    try {
+      final items = await NotificationService().list();
+      if (!mounted) return;
+      setState(() => _hasUnread = items.any((e) => e['readAt'] == null));
+    } catch (_) {
+      return;
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
+    _loadUnread();
+  }
 
   int _index = 0;
 
@@ -50,10 +62,7 @@ class _MainScreenState extends State<MainScreen> {
         context,
         MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
       );
-      if (saved == true) {
-        _homeKey.currentState?.reload();
-        _transactionsKey.currentState?.reload();
-      }
+      if (saved == true) _reloadAll();
       return;
     }
     setState(() => _index = slot < 2 ? slot : slot - 1);
@@ -61,17 +70,36 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      HomeScreen(
+        key: _homeKey,
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        onTransactionSaved: _reloadAll,
+        hasUnreadNotifications: _hasUnread,
+      ),
+      TransactionsScreen(
+        key: _transactionsKey,
+        onChanged: (_) => _reloadAll(),
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+      ),
+      BudgetScreen(
+        key: _budgetKey,
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+      ),
+      ProfileScreen(onDataReset: _reloadAll),
+    ];
+
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
       backgroundColor: Colors.transparent,
-      drawer: AppDrawer(
-        onDataReset: () {
-          _homeKey.currentState?.reload();
-          _transactionsKey.currentState?.reload();
-        },
-      ),
-      body: IndexedStack(index: _index, children: _pages),
+      drawer: AppDrawer(onDataReset: _reloadAll),
+      body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: _buildBottomBar(),
     );
   }
