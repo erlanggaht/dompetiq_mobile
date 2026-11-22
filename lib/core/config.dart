@@ -20,6 +20,7 @@ class ApiRouteConfig {
   static const String usersMe = '/users/me';
   static const String monthlySummary = '/monthly-summary';
   static const String notifications = '/notifications';
+  static const String savingsGoals = '/savings-goals';
 }
 
 class StorageConfig {

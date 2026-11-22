@@ -8,6 +8,7 @@ import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/screens/report_screen.dart';
+import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/settings_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
@@ -125,6 +126,20 @@ class _AppDrawerState extends State<AppDrawer> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ReportScreen()),
+                  );
+                },
+              ),
+              _DrawerItem(
+                icon: PhosphorIconsRegular.piggyBank,
+                title: 'Savings Goals',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          SavingsScreen(onChanged: widget.onDataReset),
+                    ),
                   );
                 },
               ),

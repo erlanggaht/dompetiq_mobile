@@ -66,9 +66,18 @@ class BudgetScreenState extends State<BudgetScreen> {
 
   void reload() => _load(showLoading: false);
 
+  // Latest period is not always the active one (weekly periods expire).
   _BudgetPeriod? get _current {
+    final today = _dayOnly(DateTime.now());
     for (final period in _periods) {
-      if (period.periodType == _periodType) return period;
+      final start = period.startDate;
+      final end = period.endDate;
+      if (period.periodType != _periodType || start == null || end == null) {
+        continue;
+      }
+      if (!today.isBefore(_dayOnly(start)) && !today.isAfter(_dayOnly(end))) {
+        return period;
+      }
     }
     return null;
   }
@@ -229,6 +238,10 @@ class BudgetScreenState extends State<BudgetScreen> {
       text: item == null ? '' : formatThousands(item.allocated),
     );
     bool saving = false;
+    final initialAmount = amount.text;
+    final initialCategory = categoryUserId;
+    bool isDirty() =>
+        amount.text != initialAmount || categoryUserId != initialCategory;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -238,137 +251,169 @@ class BudgetScreenState extends State<BudgetScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheet) => Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                item == null ? 'Add budget' : 'Edit budget',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+        builder: (sheetContext, setSheet) => PopScope(
+          canPop: !isDirty(),
+          onPopInvokedWithResult: (didPop, _) async {
+            if (didPop) return;
+            final discard = await showDialog<bool>(
+              context: sheetContext,
+              builder: (context) => AlertDialog(
+                title: const Text('Discard changes?'),
+                content: const Text(
+                  'The budget you entered will not be saved.',
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item == null
-                    ? 'Only categories without a budget are shown'
-                    : 'Change the allocation for this category',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF667085)),
-              ),
-              const SizedBox(height: 18),
-              DropdownButtonFormField<int>(
-                initialValue: categoryUserId,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  for (final category in available)
-                    DropdownMenuItem<int>(
-                      value: category['categoryUserId'] as int,
-                      child: Text(category['name'] as String),
-                    ),
-                ],
-                onChanged: item == null
-                    ? (value) => setSheet(() => categoryUserId = value)
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: amount,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Allocation',
-                  prefixText: 'Rp ',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) {
-                  final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-                  if (digits.isEmpty) {
-                    amount.clear();
-                    return;
-                  }
-                  if (digits.length > 12) {
-                    return;
-                  }
-                  final formatted = formatThousands(int.parse(digits));
-                  amount.value = TextEditingValue(
-                    text: formatted,
-                    selection: TextSelection.collapsed(
-                      offset: formatted.length,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 48,
-                child: FilledButton(
-                  onPressed: saving
-                      ? null
-                      : () async {
-                          final digits = amount.text.replaceAll(
-                            RegExp(r'[^0-9]'),
-                            '',
-                          );
-                          final allocated = int.tryParse(digits) ?? 0;
-                          if (categoryUserId == null || allocated <= 0) {
-                            _showMessage(
-                              'Choose a category and enter an amount',
-                            );
-                            return;
-                          }
-                          setSheet(() => saving = true);
-                          try {
-                            if (item == null) {
-                              await _service.create(
-                                periodType: _periodType,
-                                categoryUserId: categoryUserId!,
-                                allocated: allocated,
-                              );
-                            } else {
-                              await _service.updateItem(item.id, allocated);
-                            }
-                            if (sheetContext.mounted) {
-                              Navigator.pop(sheetContext);
-                            }
-                            await _load(showLoading: false);
-                          } catch (e) {
-                            if (sheetContext.mounted) {
-                              Navigator.pop(sheetContext);
-                            }
-                            _showMessage(
-                              e.toString().replaceFirst('Exception: ', ''),
-                            );
-                          }
-                        },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Keep editing'),
                   ),
-                  child: saving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Save'),
-                ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Discard'),
+                  ),
+                ],
               ),
-            ],
+            );
+            if (discard == true && sheetContext.mounted) {
+              Navigator.pop(sheetContext);
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  item == null ? 'Add budget' : 'Edit budget',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item == null
+                      ? 'Only categories without a budget are shown'
+                      : 'Change the allocation for this category',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF667085),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                DropdownButtonFormField<int>(
+                  initialValue: categoryUserId,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (final category in available)
+                      DropdownMenuItem<int>(
+                        value: category['categoryUserId'] as int,
+                        child: Text(category['name'] as String),
+                      ),
+                  ],
+                  onChanged: item == null
+                      ? (value) => setSheet(() => categoryUserId = value)
+                      : null,
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: amount,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Allocation',
+                    prefixText: 'Rp ',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    setSheet(() {});
+                    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    if (digits.isEmpty) {
+                      amount.clear();
+                      return;
+                    }
+                    if (digits.length > 12) {
+                      return;
+                    }
+                    final formatted = formatThousands(int.parse(digits));
+                    amount.value = TextEditingValue(
+                      text: formatted,
+                      selection: TextSelection.collapsed(
+                        offset: formatted.length,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: saving
+                        ? null
+                        : () async {
+                            final digits = amount.text.replaceAll(
+                              RegExp(r'[^0-9]'),
+                              '',
+                            );
+                            final allocated = int.tryParse(digits) ?? 0;
+                            if (categoryUserId == null || allocated <= 0) {
+                              _showMessage(
+                                'Choose a category and enter an amount',
+                              );
+                              return;
+                            }
+                            setSheet(() => saving = true);
+                            try {
+                              if (item == null) {
+                                await _service.create(
+                                  periodType: _periodType,
+                                  categoryUserId: categoryUserId!,
+                                  allocated: allocated,
+                                );
+                              } else {
+                                await _service.updateItem(item.id, allocated);
+                              }
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
+                              await _load(showLoading: false);
+                            } catch (e) {
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
+                              _showMessage(
+                                e.toString().replaceFirst('Exception: ', ''),
+                              );
+                            }
+                          },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B62FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -406,6 +451,8 @@ class BudgetScreenState extends State<BudgetScreen> {
   }
 }
 
+DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
 class _BudgetPeriod {
   final int id;
   final String name;
@@ -431,8 +478,8 @@ class _BudgetPeriod {
     id: (json['id'] as num).toInt(),
     name: json['name'] as String? ?? '',
     periodType: json['periodType'] as String? ?? 'monthly',
-    startDate: DateTime.tryParse(json['startDate'] as String? ?? ''),
-    endDate: DateTime.tryParse(json['endDate'] as String? ?? ''),
+    startDate: DateTime.tryParse(json['startDate'] as String? ?? '')?.toLocal(),
+    endDate: DateTime.tryParse(json['endDate'] as String? ?? '')?.toLocal(),
     totalAllocated: (json['totalAllocated'] as num?)?.toInt() ?? 0,
     totalSpent: (json['totalSpent'] as num?)?.toInt() ?? 0,
     items: (json['items'] as List? ?? [])
@@ -539,6 +586,7 @@ class _SummaryCard extends StatelessWidget {
     final spent = current?.totalSpent ?? 0;
     final remaining = allocated - spent;
     final ratio = allocated == 0 ? 0.0 : (spent / allocated).clamp(0.0, 1.0);
+    final overCount = current?.items.where((i) => i.remaining < 0).length ?? 0;
 
     final range = current?.startDate != null && current?.endDate != null
         ? '${formatDateShort(current!.startDate!)} – ${formatDateShort(current.endDate!)}'
@@ -606,6 +654,17 @@ class _SummaryCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (overCount > 0) ...[
+                const SizedBox(height: 10),
+                Text(
+                  '$overCount ${overCount == 1 ? 'category' : 'categories'} over budget',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

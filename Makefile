@@ -3,13 +3,16 @@ ADB := $(LOCALAPPDATA)/Android/Sdk/platform-tools/adb.exe
 ENV := env.json
 TEST_ENV := env.test.json
 
-.PHONY: run build test itest reverse clean deps
+.PHONY: run build build-split test itest reverse clean deps
 
 run:
 	flutter run -d $(DEVICE) --dart-define-from-file=$(ENV)
 
 build:
 	flutter build apk --dart-define-from-file=$(ENV)
+
+build-split:
+	flutter build apk --split-per-abi --dart-define-from-file=$(ENV)
 
 test:
 	flutter test
