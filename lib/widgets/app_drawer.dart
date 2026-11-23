@@ -16,6 +16,7 @@ class AppDrawer extends StatefulWidget {
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onOpenTools;
+  final VoidCallback? onOpenCards;
   final bool hasUnreadNotifications;
 
   const AppDrawer({
@@ -24,6 +25,7 @@ class AppDrawer extends StatefulWidget {
     this.onOpenMenu,
     this.onOpenNotifications,
     this.onOpenTools,
+    this.onOpenCards,
     this.hasUnreadNotifications = false,
   });
 
@@ -128,8 +130,16 @@ class _AppDrawerState extends State<AppDrawer> {
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
               _DrawerItem(
+                icon: PhosphorIconsRegular.creditCard,
+                title: 'Cards',
+                onTap: () {
+                  Navigator.pop(context);
+                  widget.onOpenCards?.call();
+                },
+              ),
+              _DrawerItem(
                 icon: PhosphorIconsRegular.squaresFour,
-                title: 'Tools',
+                title: 'Other Feature',
                 onTap: () {
                   Navigator.pop(context);
                   widget.onOpenTools?.call();

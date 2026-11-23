@@ -4,7 +4,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
-import 'package:flutter_application_1/widgets/app_section_header.dart';
 import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -86,19 +85,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppSectionHeader(
-              title: 'Notifications',
-              onOpenMenu: widget.onOpenMenu,
-              onOpenNotifications: widget.onOpenNotifications,
-              hasUnreadNotifications: widget.hasUnreadNotifications,
-            ),
-            Expanded(child: _buildBody()),
-          ],
-        ),
-      ),
+      body: SafeArea(child: _buildBody()),
     );
   }
 

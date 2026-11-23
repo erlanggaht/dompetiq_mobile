@@ -48,7 +48,7 @@ class HomeActionCard extends StatelessWidget {
             _divider(),
             _ActionItem(
               icon: PhosphorIconsFill.squaresFour,
-              label: 'Tools',
+              label: 'Other',
               color: const Color(0xFF3B62FF),
               onTap: onTools,
             ),

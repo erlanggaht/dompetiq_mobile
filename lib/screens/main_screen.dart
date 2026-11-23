@@ -11,6 +11,7 @@ import 'package:flutter_application_1/screens/report_screen.dart';
 import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
 import 'package:flutter_application_1/screens/tools_screen.dart';
+import 'package:flutter_application_1/screens/cards_screen.dart';
 import 'package:flutter_application_1/widgets/app_drawer.dart';
 
 class MainScreen extends StatefulWidget {
@@ -106,6 +107,7 @@ class _MainScreenState extends State<MainScreen> {
         onOpenBudget: () => setState(() => _index = 2),
         onOpenSavings: () => setState(() => _index = 5),
         onOpenReport: () => setState(() => _index = 6),
+        onOpenCards: () => setState(() => _index = 7),
       ),
       SavingsScreen(
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
@@ -113,6 +115,11 @@ class _MainScreenState extends State<MainScreen> {
         hasUnreadNotifications: _hasUnread,
       ),
       ReportScreen(
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+      ),
+      CardsScreen(
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
@@ -136,6 +143,7 @@ class _MainScreenState extends State<MainScreen> {
           onOpenNotifications: _openNotifications,
           hasUnreadNotifications: _hasUnread,
           onOpenTools: _openTools,
+          onOpenCards: () => setState(() => _index = 7),
         ),
         body: IndexedStack(index: _index, children: pages),
         bottomNavigationBar: _buildBottomBar(),

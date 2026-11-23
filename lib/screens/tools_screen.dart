@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/screens/budget_screen.dart';
+import 'package:flutter_application_1/screens/cards_screen.dart';
 import 'package:flutter_application_1/screens/report_screen.dart';
 import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
@@ -15,6 +16,7 @@ class ToolsScreen extends StatelessWidget {
   final VoidCallback? onOpenBudget;
   final VoidCallback? onOpenSavings;
   final VoidCallback? onOpenReport;
+  final VoidCallback? onOpenCards;
 
   const ToolsScreen({
     super.key,
@@ -25,6 +27,7 @@ class ToolsScreen extends StatelessWidget {
     this.onOpenBudget,
     this.onOpenSavings,
     this.onOpenReport,
+    this.onOpenCards,
   });
 
   @override
@@ -82,6 +85,12 @@ class ToolsScreen extends StatelessWidget {
             : null,
         onTap: onOpenReport,
       ),
+      _Tool(
+        'Cards',
+        PhosphorIconsRegular.creditCard,
+        onOpenCards == null ? const CardsScreen(showBottomNav: true) : null,
+        onTap: onOpenCards,
+      ),
     ];
 
     return Scaffold(
@@ -90,7 +99,7 @@ class ToolsScreen extends StatelessWidget {
         child: Column(
           children: [
             AppSectionHeader(
-              title: 'Tools',
+              title: 'Other Feature',
               onOpenMenu: onOpenMenu,
               onOpenNotifications: onOpenNotifications,
               hasUnreadNotifications: hasUnreadNotifications,

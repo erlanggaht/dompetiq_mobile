@@ -22,6 +22,11 @@ class ApiRouteConfig {
   static const String notifications = '/notifications';
   static const String savingsGoals = '/savings-goals';
   static const String savingsGoalActivity = '/savings-goals/activity';
+  static const String myCard = '/my-card';
+  static const String manageMyCard = '/my-card/manage';
+  static const String closeMyCard = '/my-card/close';
+  static const String changeCardStatus = '/my-card/change-status';
+  static const String changePrimaryCard = '/my-card/change-primary';
 }
 
 class StorageConfig {
