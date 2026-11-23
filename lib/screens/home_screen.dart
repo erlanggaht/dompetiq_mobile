@@ -19,6 +19,7 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onTransactionSaved;
+  final VoidCallback? onOpenTools;
   final bool hasUnreadNotifications;
 
   const HomeScreen({
@@ -26,6 +27,7 @@ class HomeScreen extends StatefulWidget {
     this.onOpenMenu,
     this.onOpenNotifications,
     this.onTransactionSaved,
+    this.onOpenTools,
     this.hasUnreadNotifications = false,
   });
 
@@ -68,6 +70,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _deleteTransaction(String transactionId) async {
+    if (transactionId.startsWith('ledger-')) return;
     setState(
       () =>
           _transactions.removeWhere((t) => t['transactionId'] == transactionId),
@@ -121,6 +124,36 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openDetail(String transactionId) async {
+    if (transactionId.startsWith('ledger-')) {
+      final item = _transactions.firstWhere(
+        (item) => item['transactionId'] == transactionId,
+        orElse: () => <String, dynamic>{},
+      );
+      if (item.isEmpty || !mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (_) => AlertDialog(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(item['title'] as String? ?? 'Transfer ke Saving Goal'),
+          content: Text(
+            'Saving Goal: ${item['categoryLabel']}\n'
+            'Nominal: ${item['amount']}\n'
+            'Tanggal: ${item['date']}\n\n'
+            'Transfer Saving Goal tidak dapat diedit atau dihapus.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     final changed = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -149,14 +182,20 @@ class HomeScreenState extends State<HomeScreen> {
           ApiRouteConfig.financialRecord,
           queryParameters: {'pageSize': 10},
         ),
+        DioClient.instance.get(ApiRouteConfig.savingsGoalActivity),
       ]);
       if (!mounted || seq != _loadSeq) return;
       final accounts = (results[0].data['data']['accounts'] as List)
           .cast<Map<String, dynamic>>();
-      final transactions = (results[1].data['data'] as List)
-          .cast<Map<String, dynamic>>()
-          .map(mapTransaction)
-          .toList();
+      final transactions =
+          [
+            ...(results[1].data['data'] as List).cast<Map<String, dynamic>>(),
+            ...(results[2].data['data'] as List).cast<Map<String, dynamic>>(),
+          ].map(mapTransaction).toList()..sort(
+            (a, b) => (b['dateTime'] as DateTime).compareTo(
+              a['dateTime'] as DateTime,
+            ),
+          );
       setState(() {
         _balance = accounts.fold(
           0,
@@ -250,7 +289,7 @@ class HomeScreenState extends State<HomeScreen> {
                     HomeActionCard(
                       onIncome: () => _openTransactionForm('Income'),
                       onSpending: () => _openTransactionForm('Spending'),
-                      onTransfer: () => _showSnack('Transfer form coming soon'),
+                      onTools: widget.onOpenTools ?? () {},
                     ),
                     const SizedBox(height: 32),
                     HomeTransactionSection(

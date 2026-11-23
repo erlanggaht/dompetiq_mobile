@@ -21,6 +21,7 @@ class ApiRouteConfig {
   static const String monthlySummary = '/monthly-summary';
   static const String notifications = '/notifications';
   static const String savingsGoals = '/savings-goals';
+  static const String savingsGoalActivity = '/savings-goals/activity';
 }
 
 class StorageConfig {

@@ -7,16 +7,25 @@ import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
-import 'package:flutter_application_1/screens/report_screen.dart';
-import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/settings_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_logout_dialog.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
   final VoidCallback? onDataReset;
+  final VoidCallback? onOpenMenu;
+  final VoidCallback? onOpenNotifications;
+  final VoidCallback? onOpenTools;
+  final bool hasUnreadNotifications;
 
-  const AppDrawer({super.key, this.onDataReset});
+  const AppDrawer({
+    super.key,
+    this.onDataReset,
+    this.onOpenMenu,
+    this.onOpenNotifications,
+    this.onOpenTools,
+    this.hasUnreadNotifications = false,
+  });
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -119,28 +128,11 @@ class _AppDrawerState extends State<AppDrawer> {
               const Divider(height: 1, color: Color(0xFFEDEEF3)),
               const SizedBox(height: 10),
               _DrawerItem(
-                icon: PhosphorIconsRegular.chartPie,
-                title: 'Monthly Report',
+                icon: PhosphorIconsRegular.squaresFour,
+                title: 'Tools',
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ReportScreen()),
-                  );
-                },
-              ),
-              _DrawerItem(
-                icon: PhosphorIconsRegular.piggyBank,
-                title: 'Savings Goals',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          SavingsScreen(onChanged: widget.onDataReset),
-                    ),
-                  );
+                  widget.onOpenTools?.call();
                 },
               ),
               _DrawerItem(

@@ -4,10 +4,22 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
-import 'package:flutter_application_1/widgets/app_page_header.dart';
+import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  final VoidCallback? onOpenMenu;
+  final VoidCallback? onOpenNotifications;
+  final bool hasUnreadNotifications;
+  final bool showBottomNav;
+
+  const NotificationsScreen({
+    super.key,
+    this.onOpenMenu,
+    this.onOpenNotifications,
+    this.hasUnreadNotifications = false,
+    this.showBottomNav = false,
+  });
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -71,10 +83,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      bottomNavigationBar: widget.showBottomNav
+          ? AppBottomNav(onHome: () => Navigator.pop(context))
+          : null,
       body: SafeArea(
         child: Column(
           children: [
-            const AppPageHeader(title: 'Notifications'),
+            AppSectionHeader(
+              title: 'Notifications',
+              onOpenMenu: widget.onOpenMenu,
+              onOpenNotifications: widget.onOpenNotifications,
+              hasUnreadNotifications: widget.hasUnreadNotifications,
+            ),
             Expanded(child: _buildBody()),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 
@@ -37,7 +38,10 @@ class AuthService {
 
   Future<bool> isSessionValid() async {
     final response = await _dio.get(ApiRouteConfig.loginCheck);
-    return response.data['data']?['isLogin'] == true;
+    final isLogin = response.data['data']?['isLogin'] == true;
+    DioClient.markSessionValidated(isLogin);
+    debugPrint('[session] login/check isLogin=$isLogin');
+    return isLogin;
   }
 
   Future<void> logout({required String deviceId}) async {

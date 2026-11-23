@@ -4,18 +4,22 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/budget/budget_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
-import 'package:flutter_application_1/widgets/app_top_bar.dart';
+import 'package:flutter_application_1/widgets/amount_field.dart';
+import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 
 class BudgetScreen extends StatefulWidget {
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
+  final bool showBottomNav;
 
   const BudgetScreen({
     super.key,
     this.onOpenMenu,
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
+    this.showBottomNav = false,
   });
 
   @override
@@ -91,20 +95,19 @@ class BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      bottomNavigationBar: widget.showBottomNav
+          ? AppBottomNav(onHome: () => Navigator.pop(context))
+          : null,
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
-                  child: AppTopBar(
-                    title: 'Budget',
-                    onOpenMenu: widget.onOpenMenu,
-                    onOpenNotifications: widget.onOpenNotifications,
-                    hasUnreadNotifications: widget.hasUnreadNotifications,
-                  ),
+                AppSectionHeader(
+                  title: 'Budget',
+                  onOpenMenu: widget.onOpenMenu,
+                  onOpenNotifications: widget.onOpenNotifications,
+                  hasUnreadNotifications: widget.hasUnreadNotifications,
                 ),
                 Expanded(child: _buildBody()),
               ],
@@ -242,10 +245,15 @@ class BudgetScreenState extends State<BudgetScreen> {
     final initialCategory = categoryUserId;
     bool isDirty() =>
         amount.text != initialAmount || categoryUserId != initialCategory;
+    final keys = AmountKeys(amount);
+    bool showKeypad = false;
 
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+      ),
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -278,142 +286,151 @@ class BudgetScreenState extends State<BudgetScreen> {
               Navigator.pop(sheetContext);
             }
           },
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  item == null ? 'Add budget' : 'Edit budget',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item == null
-                      ? 'Only categories without a budget are shown'
-                      : 'Change the allocation for this category',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF667085),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                DropdownButtonFormField<int>(
-                  initialValue: categoryUserId,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    for (final category in available)
-                      DropdownMenuItem<int>(
-                        value: category['categoryUserId'] as int,
-                        child: Text(category['name'] as String),
-                      ),
-                  ],
-                  onChanged: item == null
-                      ? (value) => setSheet(() => categoryUserId = value)
-                      : null,
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: amount,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Allocation',
-                    prefixText: 'Rp ',
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) {
-                    setSheet(() {});
-                    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-                    if (digits.isEmpty) {
-                      amount.clear();
-                      return;
-                    }
-                    if (digits.length > 12) {
-                      return;
-                    }
-                    final formatted = formatThousands(int.parse(digits));
-                    amount.value = TextEditingValue(
-                      text: formatted,
-                      selection: TextSelection.collapsed(
-                        offset: formatted.length,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 48,
-                  child: FilledButton(
-                    onPressed: saving
-                        ? null
-                        : () async {
-                            final digits = amount.text.replaceAll(
-                              RegExp(r'[^0-9]'),
-                              '',
-                            );
-                            final allocated = int.tryParse(digits) ?? 0;
-                            if (categoryUserId == null || allocated <= 0) {
-                              _showMessage(
-                                'Choose a category and enter an amount',
-                              );
-                              return;
-                            }
-                            setSheet(() => saving = true);
-                            try {
-                              if (item == null) {
-                                await _service.create(
-                                  periodType: _periodType,
-                                  categoryUserId: categoryUserId!,
-                                  allocated: allocated,
-                                );
-                              } else {
-                                await _service.updateItem(item.id, allocated);
-                              }
-                              if (sheetContext.mounted) {
-                                Navigator.pop(sheetContext);
-                              }
-                              await _load(showLoading: false);
-                            } catch (e) {
-                              if (sheetContext.mounted) {
-                                Navigator.pop(sheetContext);
-                              }
-                              _showMessage(
-                                e.toString().replaceFirst('Exception: ', ''),
-                              );
-                            }
-                          },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B62FF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: saving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          item == null ? 'Add budget' : 'Edit budget',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item == null
+                              ? 'Only categories without a budget are shown'
+                              : 'Change the allocation for this category',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF667085),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        DropdownButtonFormField<int>(
+                          initialValue: categoryUserId,
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: [
+                            for (final category in available)
+                              DropdownMenuItem<int>(
+                                value: category['categoryUserId'] as int,
+                                child: Text(category['name'] as String),
+                              ),
+                          ],
+                          onChanged: item == null
+                              ? (value) =>
+                                    setSheet(() => categoryUserId = value)
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+                        AmountField(
+                          controller: amount,
+                          label: 'Allocation',
+                          useInternalKeypad: false,
+                          onTap: () => setSheet(() => showKeypad = true),
+                          onChanged: () => setSheet(() {}),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 48,
+                          child: FilledButton(
+                            onPressed: saving
+                                ? null
+                                : () async {
+                                    final digits = amount.text.replaceAll(
+                                      RegExp(r'[^0-9]'),
+                                      '',
+                                    );
+                                    final allocated = int.tryParse(digits) ?? 0;
+                                    if (categoryUserId == null ||
+                                        allocated <= 0) {
+                                      _showMessage(
+                                        'Choose a category and enter an amount',
+                                      );
+                                      return;
+                                    }
+                                    setSheet(() => saving = true);
+                                    try {
+                                      if (item == null) {
+                                        await _service.create(
+                                          periodType: _periodType,
+                                          categoryUserId: categoryUserId!,
+                                          allocated: allocated,
+                                        );
+                                      } else {
+                                        await _service.updateItem(
+                                          item.id,
+                                          allocated,
+                                        );
+                                      }
+                                      if (sheetContext.mounted) {
+                                        Navigator.pop(sheetContext);
+                                      }
+                                      await _load(showLoading: false);
+                                    } catch (e) {
+                                      if (sheetContext.mounted) {
+                                        Navigator.pop(sheetContext);
+                                      }
+                                      _showMessage(
+                                        e.toString().replaceFirst(
+                                          'Exception: ',
+                                          '',
+                                        ),
+                                      );
+                                    }
+                                  },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF3B62FF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          )
-                        : const Text('Save'),
+                            child: saving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Save'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              if (showKeypad)
+                AmountKeypad(
+                  fullWidth: true,
+                  onDigit: (digit) {
+                    keys.append(digit);
+                    setSheet(() {});
+                  },
+                  onBackspace: () {
+                    keys.backspace();
+                    setSheet(() {});
+                  },
+                  onQuickAmount: (value) {
+                    keys.set(value);
+                    setSheet(() {});
+                  },
+                  onDone: () => setSheet(() => showKeypad = false),
+                ),
+            ],
           ),
         ),
       ),
@@ -703,6 +720,13 @@ class _BudgetCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFEAECF0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

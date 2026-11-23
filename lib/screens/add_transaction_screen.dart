@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
+import 'package:flutter_application_1/widgets/amount_field.dart';
 
 const _accent = Color(0xFF3B62FF);
 const _income = Color(0xFF16A34A);
@@ -280,7 +280,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           children: [
             Expanded(child: _buildBody()),
             if (_showAmountPad && !_isLoading && _error == null)
-              _AmountKeypad(
+              AmountKeypad(
                 onDigit: _appendAmountDigit,
                 onBackspace: _removeAmountDigit,
                 onQuickAmount: _setQuickAmount,
@@ -440,7 +440,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         _amountFocus.requestFocus();
                       },
                 onSubmitted: kIsWeb ? (_) => _noteFocus.requestFocus() : null,
-                inputFormatters: [_ThousandsFormatter()],
+                inputFormatters: [ThousandsFormatter()],
                 cursorColor: _accent,
                 style: const TextStyle(
                   fontSize: 40,
@@ -662,114 +662,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 }
 
-class _AmountKeypad extends StatelessWidget {
-  final ValueChanged<String> onDigit;
-  final VoidCallback onBackspace;
-  final ValueChanged<int> onQuickAmount;
-  final VoidCallback onDone;
-
-  const _AmountKeypad({
-    required this.onDigit,
-    required this.onBackspace,
-    required this.onQuickAmount,
-    required this.onDone,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F8),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE4E7EC)),
-      ),
-      child: Column(
-        children: [
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _quickButton(50000),
-              _quickButton(100000),
-              _quickButton(500000),
-              _quickButton(1000000),
-            ],
-          ),
-          const SizedBox(height: 10),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 2.2,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
-            children: [
-              for (final digit in ['1', '2', '3', '4', '5', '6', '7', '8', '9'])
-                _key(digit, () => onDigit(digit)),
-              _key(null, onBackspace, icon: PhosphorIconsRegular.backspace),
-              _key('0', () => onDigit('0')),
-              _key(null, onDone, icon: PhosphorIconsBold.check, color: _accent),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _quickButton(int amount) {
-    return InkWell(
-      onTap: () => onQuickAmount(amount),
-      borderRadius: BorderRadius.circular(9),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: const Color(0xFFE4E7EC)),
-        ),
-        child: Text(
-          'Rp ${formatThousands(amount)}',
-          style: const TextStyle(
-            color: _muted,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _key(
-    String? label,
-    VoidCallback onTap, {
-    IconData? icon,
-    Color color = _ink,
-  }) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Center(
-          child: icon == null
-              ? Text(
-                  label!,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                )
-              : Icon(icon, color: color, size: 20),
-        ),
-      ),
-    );
-  }
-}
-
 class _QuickAmountRow extends StatelessWidget {
   final ValueChanged<int> onQuickAmount;
 
@@ -787,28 +679,6 @@ class _QuickAmountRow extends StatelessWidget {
             onPressed: () => onQuickAmount(amount),
           ),
       ],
-    );
-  }
-}
-
-class _ThousandsFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) {
-      return const TextEditingValue(
-        text: '0',
-        selection: TextSelection.collapsed(offset: 1),
-      );
-    }
-    if (digits.length > 15) return oldValue;
-    final formatted = formatThousands(int.parse(digits));
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

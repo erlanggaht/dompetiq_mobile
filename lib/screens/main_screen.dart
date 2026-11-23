@@ -7,7 +7,10 @@ import 'package:flutter_application_1/screens/budget_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
 import 'package:flutter_application_1/screens/notifications_screen.dart';
 import 'package:flutter_application_1/screens/profile_screen.dart';
+import 'package:flutter_application_1/screens/report_screen.dart';
+import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
+import 'package:flutter_application_1/screens/tools_screen.dart';
 import 'package:flutter_application_1/widgets/app_drawer.dart';
 
 class MainScreen extends StatefulWidget {
@@ -35,6 +38,8 @@ class _MainScreenState extends State<MainScreen> {
     _transactionsKey.currentState?.reload();
     _budgetKey.currentState?.reload();
   }
+
+  void _openTools() => setState(() => _index = 4);
 
   Future<void> _loadUnread() async {
     try {
@@ -76,6 +81,7 @@ class _MainScreenState extends State<MainScreen> {
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         onTransactionSaved: _reloadAll,
+        onOpenTools: _openTools,
         hasUnreadNotifications: _hasUnread,
       ),
       TransactionsScreen(
@@ -92,15 +98,48 @@ class _MainScreenState extends State<MainScreen> {
         hasUnreadNotifications: _hasUnread,
       ),
       ProfileScreen(onDataReset: _reloadAll),
+      ToolsScreen(
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+        onOpenTransactions: () => setState(() => _index = 1),
+        onOpenBudget: () => setState(() => _index = 2),
+        onOpenSavings: () => setState(() => _index = 5),
+        onOpenReport: () => setState(() => _index = 6),
+      ),
+      SavingsScreen(
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+      ),
+      ReportScreen(
+        onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+        onOpenNotifications: _openNotifications,
+        hasUnreadNotifications: _hasUnread,
+      ),
     ];
 
-    return Scaffold(
-      key: _scaffoldKey,
-      extendBody: true,
-      backgroundColor: Colors.transparent,
-      drawer: AppDrawer(onDataReset: _reloadAll),
-      body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: _buildBottomBar(),
+    return PopScope(
+      canPop: _index == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _index != 0) {
+          setState(() => _index = 0);
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        extendBody: true,
+        backgroundColor: Colors.transparent,
+        drawer: AppDrawer(
+          onDataReset: _reloadAll,
+          onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
+          onOpenNotifications: _openNotifications,
+          hasUnreadNotifications: _hasUnread,
+          onOpenTools: _openTools,
+        ),
+        body: IndexedStack(index: _index, children: pages),
+        bottomNavigationBar: _buildBottomBar(),
+      ),
     );
   }
 

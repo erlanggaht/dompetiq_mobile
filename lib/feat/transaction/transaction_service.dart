@@ -67,9 +67,17 @@ class TransactionService {
           'qtransactionDateEnd': ?(end == null ? null : apiDate(end)),
         },
       );
+      final items = (response.data['data'] as List)
+          .cast<Map<String, dynamic>>();
+      if (page == 1) {
+        final activity = await _dio.get(ApiRouteConfig.savingsGoalActivity);
+        items.addAll(
+          (activity.data['data'] as List).cast<Map<String, dynamic>>(),
+        );
+      }
       final meta = response.data['meta'] as Map<String, dynamic>? ?? {};
       return TransactionPage(
-        (response.data['data'] as List).cast<Map<String, dynamic>>(),
+        items,
         (meta['totalRowCount'] as num?)?.toInt() ?? 0,
       );
     } on DioException catch (e) {

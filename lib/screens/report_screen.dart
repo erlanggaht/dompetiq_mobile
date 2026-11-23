@@ -3,7 +3,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/report/report_service.dart';
-import 'package:flutter_application_1/widgets/app_page_header.dart';
+import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 
 const _months = [
   'January',
@@ -42,7 +43,18 @@ String reportMonthLabel(DateTime date) =>
     '${_months[date.month - 1]} ${date.year}';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  final VoidCallback? onOpenMenu;
+  final VoidCallback? onOpenNotifications;
+  final bool hasUnreadNotifications;
+  final bool showBottomNav;
+
+  const ReportScreen({
+    super.key,
+    this.onOpenMenu,
+    this.onOpenNotifications,
+    this.hasUnreadNotifications = false,
+    this.showBottomNav = false,
+  });
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -94,10 +106,18 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      bottomNavigationBar: widget.showBottomNav
+          ? AppBottomNav(onHome: () => Navigator.pop(context))
+          : null,
       body: SafeArea(
         child: Column(
           children: [
-            const AppPageHeader(title: 'Monthly Report'),
+            AppSectionHeader(
+              title: 'Monthly Report',
+              onOpenMenu: widget.onOpenMenu,
+              onOpenNotifications: widget.onOpenNotifications,
+              hasUnreadNotifications: widget.hasUnreadNotifications,
+            ),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -189,6 +209,13 @@ class _ReportScreenState extends State<ReportScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFEDEEF3)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -260,6 +287,13 @@ class _ReportScreenState extends State<ReportScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFEDEEF3)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -325,6 +359,13 @@ class _ReportScreenState extends State<ReportScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFEDEEF3)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -382,6 +423,13 @@ class _ReportScreenState extends State<ReportScreen> {
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: const Color(0xFFEDEEF3)),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x0D000000),
+          blurRadius: 12,
+          offset: Offset(0, 4),
+        ),
+      ],
     ),
     child: Text(
       message,

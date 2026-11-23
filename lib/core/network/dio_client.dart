@@ -10,6 +10,8 @@ class DioClient {
 
   static final Map<String, String> _cookies = {};
   static String? _sessionCookie;
+  static bool _sessionLoaded = false;
+  static bool _sessionValidated = false;
 
   static const _authEndpoints = [
     '/auth/login',
@@ -31,6 +33,10 @@ class DioClient {
         ..interceptors.add(
           InterceptorsWrapper(
             onRequest: (options, handler) {
+              debugPrint(
+                '[session] request ${options.method} ${options.uri.path} '
+                'hasCookie=${_cookies.containsKey(_sessionCookieName)}',
+              );
               if (_cookies.isNotEmpty) {
                 options.headers['Cookie'] = _cookies.entries
                     .map((e) => '${e.key}=${e.value}')
@@ -39,17 +45,30 @@ class DioClient {
               handler.next(options);
             },
             onResponse: (response, handler) {
+              debugPrint(
+                '[session] response ${response.requestOptions.uri.path} '
+                'status=${response.statusCode} '
+                'hasSetCookie=${response.headers['set-cookie'] != null}',
+              );
               _captureSession(response);
               handler.next(response);
             },
             onError: (error, handler) {
+              debugPrint(
+                '[session] error ${error.requestOptions.uri.path} '
+                'status=${error.response?.statusCode} '
+                'hasCookie=${_cookies.containsKey(_sessionCookieName)}',
+              );
               if (error.response != null) {
                 _captureSession(error.response!);
               }
               final isAuthRequest = _authEndpoints.any(
                 (endpoint) => error.requestOptions.uri.path.contains(endpoint),
               );
-              if (error.response?.statusCode == 401 && !isAuthRequest) {
+              if (error.response?.statusCode == 401 &&
+                  !isAuthRequest &&
+                  _sessionLoaded &&
+                  _sessionValidated) {
                 clearSession();
                 navigatorKey.currentState?.pushNamedAndRemoveUntil(
                   '/auth/login',
@@ -63,6 +82,8 @@ class DioClient {
 
   static Dio get instance => _dio;
 
+  static bool get hasSession => _sessionCookie != null;
+
   static void _captureSession(Response response) {
     final setCookies = response.headers['set-cookie'];
     if (setCookies == null) return;
@@ -73,6 +94,9 @@ class DioClient {
       final name = nameValue.substring(0, separator).trim();
       final value = nameValue.substring(separator + 1);
       if (value.isEmpty) {
+        debugPrint(
+          '[session] remove via set-cookie ${name == _sessionCookieName}',
+        );
         _cookies.remove(name);
         if (name == _sessionCookieName) {
           _sessionCookie = null;
@@ -91,7 +115,10 @@ class DioClient {
   static final _storage = FlutterSecureStorage();
 
   static Future<void> loadSession() async {
+    _sessionValidated = false;
     _sessionCookie = await _storage.read(key: _sessionCookieName);
+    _sessionLoaded = true;
+    debugPrint('[session] load storedCookie=${_sessionCookie != null}');
     if (_sessionCookie == null) return;
     final separator = _sessionCookie!.indexOf('=');
     if (separator > 0) {
@@ -100,9 +127,17 @@ class DioClient {
   }
 
   static Future<void> clearSession() async {
+    debugPrint(
+      '[session] clearSession from ${StackTrace.current.toString().split('\n').take(4).join(' | ')}',
+    );
     _sessionCookie = null;
     _cookies.remove(_sessionCookieName);
     _cookies.remove('_tmpUser');
     await _storage.delete(key: _sessionCookieName);
+  }
+
+  static void markSessionValidated(bool valid) {
+    _sessionValidated = true;
+    if (!valid) clearSession();
   }
 }

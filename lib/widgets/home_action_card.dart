@@ -4,13 +4,13 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class HomeActionCard extends StatelessWidget {
   final VoidCallback onIncome;
   final VoidCallback onSpending;
-  final VoidCallback onTransfer;
+  final VoidCallback onTools;
 
   const HomeActionCard({
     super.key,
     required this.onIncome,
     required this.onSpending,
-    required this.onTransfer,
+    required this.onTools,
   });
 
   @override
@@ -47,10 +47,10 @@ class HomeActionCard extends StatelessWidget {
             ),
             _divider(),
             _ActionItem(
-              icon: PhosphorIconsFill.arrowsLeftRight,
-              label: 'Transfer',
+              icon: PhosphorIconsFill.squaresFour,
+              label: 'Tools',
               color: const Color(0xFF3B62FF),
-              onTap: onTransfer,
+              onTap: onTools,
             ),
           ],
         ),

@@ -87,6 +87,7 @@ class RecentTransactionWidget extends StatelessWidget {
         );
       }
       final bool isIncome = item['isIncome'];
+      final bool isTransfer = item['isTransfer'] == true;
 
       final transactionId = item['transactionId'] as String;
       final row = InkWell(
@@ -142,7 +143,7 @@ class RecentTransactionWidget extends StatelessWidget {
       );
 
       rows.add(
-        onDelete == null
+        onDelete == null || isTransfer
             ? row
             : Dismissible(
                 key: ValueKey(transactionId),

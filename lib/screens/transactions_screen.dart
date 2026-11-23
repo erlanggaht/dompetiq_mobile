@@ -8,7 +8,8 @@ import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/transaction_detail_screen.dart';
-import 'package:flutter_application_1/widgets/app_top_bar.dart';
+import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 const _filters = ['All', 'Income', 'Spending'];
@@ -25,6 +26,7 @@ class TransactionsScreen extends StatefulWidget {
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
+  final bool showBottomNav;
 
   const TransactionsScreen({
     super.key,
@@ -32,6 +34,7 @@ class TransactionsScreen extends StatefulWidget {
     this.onOpenMenu,
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
+    this.showBottomNav = false,
   });
 
   @override
@@ -86,6 +89,36 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Future<void> _openDetail(String transactionId) async {
+    if (transactionId.startsWith('ledger-')) {
+      final item = _items.firstWhere(
+        (item) => item['transactionId'] == transactionId,
+        orElse: () => <String, dynamic>{},
+      );
+      if (item.isEmpty || !mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (_) => AlertDialog(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(item['title'] as String? ?? 'Transfer ke Saving Goal'),
+          content: Text(
+            'Saving Goal: ${item['categoryLabel']}\n'
+            'Nominal: ${item['amount']}\n'
+            'Tanggal: ${item['date']}\n\n'
+            'Transfer Saving Goal tidak dapat diedit atau dihapus.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     final changed = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -100,6 +133,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Future<void> _deleteTransaction(String transactionId) async {
+    if (transactionId.startsWith('ledger-')) return;
     setState(
       () => _items.removeWhere((t) => t['transactionId'] == transactionId),
     );
@@ -220,19 +254,18 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _field,
+      bottomNavigationBar: widget.showBottomNav
+          ? AppBottomNav(onHome: () => Navigator.pop(context))
+          : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
-              child: AppTopBar(
-                title: 'Transactions',
-                onOpenMenu: widget.onOpenMenu,
-                onOpenNotifications: widget.onOpenNotifications,
-                hasUnreadNotifications: widget.hasUnreadNotifications,
-              ),
+            AppSectionHeader(
+              title: 'Transactions',
+              onOpenMenu: widget.onOpenMenu,
+              onOpenNotifications: widget.onOpenNotifications,
+              hasUnreadNotifications: widget.hasUnreadNotifications,
             ),
             Container(
               color: Colors.white,

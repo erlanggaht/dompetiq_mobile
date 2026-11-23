@@ -3,15 +3,28 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/savings/savings_service.dart';
-import 'package:flutter_application_1/widgets/app_page_header.dart';
+import 'package:flutter_application_1/widgets/amount_field.dart';
+import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 
 const _accent = Color(0xFF3B62FF);
 const _green = Color(0xFF16A34A);
 
 class SavingsScreen extends StatefulWidget {
   final VoidCallback? onChanged;
+  final VoidCallback? onOpenMenu;
+  final VoidCallback? onOpenNotifications;
+  final bool hasUnreadNotifications;
+  final bool showBottomNav;
 
-  const SavingsScreen({super.key, this.onChanged});
+  const SavingsScreen({
+    super.key,
+    this.onChanged,
+    this.onOpenMenu,
+    this.onOpenNotifications,
+    this.hasUnreadNotifications = false,
+    this.showBottomNav = false,
+  });
 
   @override
   State<SavingsScreen> createState() => _SavingsScreenState();
@@ -72,24 +85,52 @@ class _SavingsScreenState extends State<SavingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppPageHeader(
-              title: 'Savings Goals',
-              trailing: _loading || _error != null
-                  ? null
-                  : IconButton(
-                      onPressed: () => _openEditor(null),
-                      icon: const Icon(
-                        PhosphorIconsRegular.plus,
-                        color: _accent,
-                      ),
-                    ),
+      bottomNavigationBar: widget.showBottomNav
+          ? AppBottomNav(onHome: () => Navigator.pop(context))
+          : null,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                AppSectionHeader(
+                  title: 'Savings Goals',
+                  onOpenMenu: widget.onOpenMenu,
+                  onOpenNotifications: widget.onOpenNotifications,
+                  hasUnreadNotifications: widget.hasUnreadNotifications,
+                ),
+                Expanded(child: _buildBody()),
+              ],
             ),
-            Expanded(child: _buildBody()),
-          ],
-        ),
+          ),
+          if (!_loading && _error == null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 104,
+              child: Center(
+                child: FilledButton.icon(
+                  onPressed: () => _openEditor(null),
+                  icon: const Icon(PhosphorIconsRegular.plus, size: 16),
+                  label: const Text('Add goal'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _accent,
+                    foregroundColor: Colors.white,
+                    shadowColor: _accent.withValues(alpha: 0.3),
+                    elevation: 5,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(0, 40),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -164,6 +205,13 @@ class _SavingsScreenState extends State<SavingsScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFEAECF0)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -234,28 +282,44 @@ class _SavingsScreenState extends State<SavingsScreen> {
   }
 
   Future<void> _sheet(
-    List<Widget> Function(BuildContext context, StateSetter setSheet) builder,
-  ) {
+    List<Widget> Function(BuildContext context, StateSetter setSheet) builder, {
+    Widget Function(BuildContext context, StateSetter setSheet)? bottom,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+      ),
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheet) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: builder(context, setSheet),
-          ),
+        builder: (context, setSheet) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    20,
+                    bottom == null
+                        ? MediaQuery.of(context).viewInsets.bottom + 24
+                        : 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: builder(context, setSheet),
+                  ),
+                ),
+              ),
+            ),
+            if (bottom != null) bottom(context, setSheet),
+          ],
         ),
       ),
     );
@@ -318,6 +382,8 @@ class _SavingsScreenState extends State<SavingsScreen> {
     DateTime? deadline = DateTime.tryParse(goal?['deadline'] as String? ?? '')
         ?.toLocal();
     bool saving = false;
+    final keys = AmountKeys(targetController);
+    bool showKeypad = true;
 
     await _sheet(
       (context, setSheet) => [
@@ -334,15 +400,12 @@ class _SavingsScreenState extends State<SavingsScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        TextField(
+        AmountField(
           controller: targetController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Target',
-            prefixText: 'Rp ',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) => _formatAmount(targetController, value),
+          label: 'Target',
+          useInternalKeypad: false,
+          autofocus: true,
+          onTap: () => setSheet(() => showKeypad = true),
         ),
         const SizedBox(height: 14),
         Row(
@@ -413,6 +476,24 @@ class _SavingsScreenState extends State<SavingsScreen> {
           ),
         ),
       ],
+      bottom: (sheetContext, setSheet) => showKeypad
+          ? AmountKeypad(
+              fullWidth: true,
+              onDigit: (digit) {
+                keys.append(digit);
+                setSheet(() {});
+              },
+              onBackspace: () {
+                keys.backspace();
+                setSheet(() {});
+              },
+              onQuickAmount: (value) {
+                keys.set(value);
+                setSheet(() {});
+              },
+              onDone: () => setSheet(() => showKeypad = false),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -424,6 +505,8 @@ class _SavingsScreenState extends State<SavingsScreen> {
     int? accountId = (_accounts.first['id'] as num).toInt();
     final amount = TextEditingController();
     bool saving = false;
+    final keys = AmountKeys(amount);
+    bool showKeypad = true;
 
     await _sheet(
       (context, setSheet) => [
@@ -448,15 +531,11 @@ class _SavingsScreenState extends State<SavingsScreen> {
           onChanged: (value) => setSheet(() => accountId = value),
         ),
         const SizedBox(height: 14),
-        TextField(
+        AmountField(
           controller: amount,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Amount',
-            prefixText: 'Rp ',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) => _formatAmount(amount, value),
+          useInternalKeypad: false,
+          autofocus: true,
+          onTap: () => setSheet(() => showKeypad = true),
         ),
         const SizedBox(height: 20),
         SizedBox(
@@ -494,6 +573,24 @@ class _SavingsScreenState extends State<SavingsScreen> {
           ),
         ),
       ],
+      bottom: (sheetContext, setSheet) => showKeypad
+          ? AmountKeypad(
+              fullWidth: true,
+              onDigit: (digit) {
+                keys.append(digit);
+                setSheet(() {});
+              },
+              onBackspace: () {
+                keys.backspace();
+                setSheet(() {});
+              },
+              onQuickAmount: (value) {
+                keys.set(value);
+                setSheet(() {});
+              },
+              onDone: () => setSheet(() => showKeypad = false),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -526,18 +623,4 @@ class _SavingsScreenState extends State<SavingsScreen> {
       _showMessage(_message(e));
     }
   }
-}
-
-void _formatAmount(TextEditingController controller, String value) {
-  final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-  if (digits.isEmpty) {
-    controller.clear();
-    return;
-  }
-  if (digits.length > 12) return;
-  final formatted = formatThousands(int.parse(digits));
-  controller.value = TextEditingValue(
-    text: formatted,
-    selection: TextSelection.collapsed(offset: formatted.length),
-  );
 }
