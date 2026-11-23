@@ -20,21 +20,13 @@ class TransactionPage {
 
 class TransactionService {
   final Dio _dio = DioClient.instance;
-  static List<Map<String, dynamic>>? _categoriesCache;
-  static List<Map<String, dynamic>>? _rekeningsCache;
-
-  static void clearOptionsCache() {
-    _categoriesCache = null;
-    _rekeningsCache = null;
-  }
+  static Future<void> clearOptionsCache() => CacheManager.clearAll();
 
   Future<List<Map<String, dynamic>>> categories() async {
-    if (_categoriesCache != null) return _categoriesCache!;
     final userId = await _userId();
     final cached = await CacheManager.read(key: 'categories', userId: userId);
     if (cached != null && !cached.stale) {
       final result = (cached.data as List).cast<Map<String, dynamic>>();
-      _categoriesCache = result;
       return result;
     }
     try {
@@ -44,7 +36,6 @@ class TransactionService {
       );
       final result = (response.data['data'] as List)
           .cast<Map<String, dynamic>>();
-      _categoriesCache = result;
       await CacheManager.write(
         key: 'categories',
         userId: userId,
@@ -61,12 +52,10 @@ class TransactionService {
   }
 
   Future<List<Map<String, dynamic>>> rekenings() async {
-    if (_rekeningsCache != null) return _rekeningsCache!;
     final userId = await _userId();
     final cached = await CacheManager.read(key: 'rekenings', userId: userId);
     if (cached != null && !cached.stale) {
       final result = (cached.data as List).cast<Map<String, dynamic>>();
-      _rekeningsCache = result;
       return result;
     }
     try {
@@ -76,7 +65,6 @@ class TransactionService {
       );
       final result = (response.data['data'] as List)
           .cast<Map<String, dynamic>>();
-      _rekeningsCache = result;
       await CacheManager.write(
         key: 'rekenings',
         userId: userId,

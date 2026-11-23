@@ -69,5 +69,15 @@ class CacheManager {
     }
   }
 
+  static Future<void> clearAll() async {
+    final preferences = await SharedPreferences.getInstance();
+    final keys = preferences.getKeys().where(
+      (key) => key.startsWith('$_prefix.'),
+    );
+    for (final key in keys) {
+      await preferences.remove(key);
+    }
+  }
+
   static String _key(String key, String userId) => '$_prefix.$userId.$key';
 }

@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
+import 'package:flutter_application_1/core/cache_manager.dart';
+import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 
 import '../../../core/network/dio_client.dart';
 
@@ -51,6 +53,8 @@ class AuthService {
       return;
     } finally {
       UserService.clear();
+      TransactionService.clearOptionsCache();
+      await CacheManager.clearAll();
       await DioClient.clearSession();
     }
   }

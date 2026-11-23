@@ -4,6 +4,8 @@ import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/device_limit_screen.dart';
 import 'package:flutter_application_1/screens/pin_verification_screen.dart';
+import 'package:flutter_application_1/widgets/app_submit_button.dart';
+import 'package:flutter_application_1/widgets/app_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -106,52 +108,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(fontSize: 18, color: Color(0xFF1C1C1C)),
               ),
               const SizedBox(height: 26),
-              TextField(
+              AppTextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Username',
+                prefixIcon: Icons.person_outline,
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppTextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Password',
+                prefixIcon: Icons.lock_outline,
                 obscureText: true,
               ),
               const SizedBox(height: 26),
-              SizedBox(
-                width: double.infinity,
-                height: 49,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
+              AppSubmitButton(
+                label: 'Login',
+                loading: _isLoading,
+                onPressed: _handleLogin,
               ),
               const SizedBox(height: 26),
               GestureDetector(

@@ -10,6 +10,9 @@ import 'package:flutter_application_1/feat/transaction/transaction_service.dart'
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/profile_avatar.dart';
+import 'package:flutter_application_1/widgets/app_text_field.dart';
+import 'package:flutter_application_1/widgets/app_date_field.dart';
+import 'package:flutter_application_1/widgets/app_select_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic> profile;
@@ -202,18 +205,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           Expanded(child: _genderField()),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _field(
-                              'Birth date',
-                              _age,
-                              readOnly: true,
-                              muted: false,
-                              suffixIcon: const Icon(
-                                PhosphorIconsRegular.calendar,
-                                size: 18,
-                                color: Color(0xFF3B62FF),
-                              ),
+                            child: AppDateField(
+                              label: 'Birth date',
+                              valueLabel: _age.text.isEmpty ? null : _age.text,
                               onTap: _pickBirthDate,
-                              validator: _birthDateValidator,
                             ),
                           ),
                         ],
@@ -280,45 +275,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
     bool readOnly = false,
-    bool? muted,
     Widget? suffixIcon,
     VoidCallback? onTap,
   }) {
-    final isMuted = muted ?? readOnly;
-    return TextFormField(
+    return AppTextField(
+      label: label,
       controller: controller,
       keyboardType: keyboard,
       inputFormatters: inputFormatters,
       validator: validator,
       readOnly: readOnly,
       onTap: onTap,
-      style: TextStyle(
-        color: isMuted ? const Color(0xFF98A2B3) : const Color(0xFF101828),
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        filled: isMuted,
-        fillColor: isMuted ? const Color(0xFFF2F4F7) : null,
-        suffixIcon: suffixIcon,
-        border: const OutlineInputBorder(),
-      ),
+      suffixIcon: suffixIcon,
+      enabled: !(readOnly && onTap == null),
     );
   }
 
   Widget _genderField() {
-    return DropdownButtonFormField<String>(
-      initialValue: _gender,
-      validator: (value) => value == null ? 'Gender is required' : null,
-      decoration: const InputDecoration(
-        labelText: 'Gender',
-        border: OutlineInputBorder(),
-      ),
-      items: const [
-        DropdownMenuItem(value: 'male', child: Text('Male')),
-        DropdownMenuItem(value: 'female', child: Text('Female')),
-        DropdownMenuItem(value: 'unknown', child: Text('Unknown')),
-      ],
-      onChanged: (value) {
+    return AppSelectField<String>(
+      label: 'Gender',
+      value: _gender,
+      valueLabel: switch (_gender) {
+        'male' => 'Male',
+        'female' => 'Female',
+        _ => 'Unknown',
+      },
+      onTap: () async {
+        final value = await showModalBottomSheet<String>(
+          context: context,
+          builder: (context) => ListView(
+            shrinkWrap: true,
+            children: [
+              for (final item in const [
+                ('male', 'Male'),
+                ('female', 'Female'),
+                ('unknown', 'Unknown'),
+              ])
+                ListTile(
+                  title: Text(item.$2),
+                  onTap: () => Navigator.pop(context, item.$1),
+                ),
+            ],
+          ),
+        );
         if (value != null) setState(() => _gender = value);
       },
     );
@@ -345,12 +344,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value!.trim())) {
       return 'Enter a valid email address';
     }
-    return null;
-  }
-
-  String? _birthDateValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Birth date is required';
-    if (parseApiDate(value) == null) return 'Use MM-DD-YYYY format';
     return null;
   }
 }

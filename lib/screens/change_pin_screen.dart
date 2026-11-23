@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/feat/settings/security_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/pin_input.dart';
+import 'package:flutter_application_1/widgets/app_password_field.dart';
+import 'package:flutter_application_1/widgets/app_submit_button.dart';
 
 class ChangePinScreen extends StatefulWidget {
   const ChangePinScreen({super.key});
@@ -144,47 +146,17 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
           const SizedBox(height: 12),
           PinInputField(controller: _confirmPinController),
           if (_hasPin) ...[
-            const SizedBox(height: 28),
-            _FieldLabel('Account Password'),
-            const SizedBox(height: 8),
-            TextField(
+            const SizedBox(height: 32),
+            AppPasswordField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                hintText: 'Your account password',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Account Password',
             ),
           ],
           const SizedBox(height: 34),
-          SizedBox(
-            height: 50,
-            child: FilledButton(
-              onPressed: _isSaving ? null : _handleSave,
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF3B62FF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      _hasPin ? 'Save New PIN' : 'Activate PIN',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
+          AppSubmitButton(
+            label: _hasPin ? 'Save New PIN' : 'Activate PIN',
+            loading: _isSaving,
+            onPressed: _handleSave,
           ),
         ],
       ),

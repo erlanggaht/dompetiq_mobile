@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/feat/auth/register_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/widgets/app_password_field.dart';
+import 'package:flutter_application_1/widgets/app_text_field.dart';
+import 'package:flutter_application_1/widgets/app_date_field.dart';
+import 'package:flutter_application_1/widgets/app_select_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -135,76 +138,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 26),
-              TextField(
+              AppTextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Email',
+                prefixIcon: Icons.email_outlined,
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppTextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Username',
+                prefixIcon: Icons.person_outline,
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppTextField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Full Name',
+                prefixIcon: Icons.badge_outlined,
               ),
               const SizedBox(height: 16),
-              InkWell(
+              AppDateField(
+                label: 'Date of Birth',
+                valueLabel: _birthDate == null ? null : _birthDateText,
                 onTap: _pickBirthDate,
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Date of Birth',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(PhosphorIconsRegular.calendar),
-                    hintText: 'MM-DD-YYYY',
-                  ),
-                  child: Text(
-                    _birthDate == null ? '' : _birthDateText,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _gender,
-                decoration: const InputDecoration(
-                  labelText: 'Gender',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'male', child: Text('Male')),
-                  DropdownMenuItem(value: 'female', child: Text('Female')),
-                ],
-                onChanged: (value) => setState(() => _gender = value!),
+              AppSelectField<String>(
+                label: 'Gender',
+                value: _gender,
+                valueLabel: _gender == 'male' ? 'Male' : 'Female',
+                onTap: () async {
+                  final value = await showModalBottomSheet<String>(
+                    context: context,
+                    builder: (context) => ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final item in const [
+                          ('male', 'Male'),
+                          ('female', 'Female'),
+                        ])
+                          ListTile(
+                            title: Text(item.$2),
+                            onTap: () => Navigator.pop(context, item.$1),
+                          ),
+                      ],
+                    ),
+                  );
+                  if (value != null) setState(() => _gender = value);
+                },
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppPasswordField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Password',
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppPasswordField(
                 controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Confirm Password',
               ),
               const SizedBox(height: 26),
               SizedBox(

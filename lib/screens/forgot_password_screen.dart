@@ -4,6 +4,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/auth/forgot_password_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
+import 'package:flutter_application_1/widgets/app_submit_button.dart';
+import 'package:flutter_application_1/widgets/app_text_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   final String title;
@@ -158,43 +160,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 26),
-                    TextField(
+                    AppTextField(
                       controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username or Email',
-                        border: OutlineInputBorder(),
-                      ),
+                      label: 'Username or Email',
+                      prefixIcon: Icons.person_outline,
                     ),
                     const SizedBox(height: 26),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 49,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleSend,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B62FF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Send Reset Link',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
+                    AppSubmitButton(
+                      label: 'Send Reset Link',
+                      loading: _isLoading,
+                      onPressed: _handleSend,
                     ),
                     const SizedBox(height: 16),
                     GestureDetector(

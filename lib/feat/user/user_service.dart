@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/core/cache_manager.dart';
 
 class UserService {
   static Map<String, dynamic>? _profile;
@@ -11,20 +12,50 @@ class UserService {
   static Future<Map<String, dynamic>> me() {
     final cached = _profile;
     if (cached != null) return Future.value(cached);
-    return _pending ??= _fetch();
+    return _pending ??= _fetchWithCache();
   }
 
   static Future<Map<String, dynamic>> refresh() {
     _profile = null;
     _pending = null;
     StorageConfig.refreshAvatarCache();
-    return me();
+    return _refreshFromNetwork();
+  }
+
+  static Future<Map<String, dynamic>> _refreshFromNetwork() async {
+    await CacheManager.remove(key: 'profile', userId: 'current');
+    return _fetch();
   }
 
   static void clear() {
     _profile = null;
     _pending = null;
   }
+
+  static Future<Map<String, dynamic>> _fetchWithCache() async {
+    final cached = await CacheManager.read(key: 'profile', userId: 'current');
+    if (cached != null && !cached.stale) {
+      _profile = (cached.data as Map).cast<String, dynamic>();
+      return _profile!;
+    }
+    try {
+      return await _fetch();
+    } catch (_) {
+      if (cached != null) {
+        _profile = (cached.data as Map).cast<String, dynamic>();
+        return _profile!;
+      }
+      rethrow;
+    }
+  }
+
+  static Future<void> _cacheProfile(Map<String, dynamic> profile) =>
+      CacheManager.write(
+        key: 'profile',
+        userId: 'current',
+        data: profile,
+        ttl: const Duration(minutes: 10),
+      );
 
   static Future<Map<String, dynamic>> updateProfile({
     required String fullName,
@@ -45,6 +76,7 @@ class UserService {
         },
       );
       _profile = response.data['data'] as Map<String, dynamic>;
+      await _cacheProfile(_profile!);
       return _profile!;
     } on DioException catch (e) {
       final message =
@@ -65,6 +97,7 @@ class UserService {
         }),
       );
       _profile = response.data['data'] as Map<String, dynamic>;
+      await _cacheProfile(_profile!);
       StorageConfig.refreshAvatarCache();
       return _profile!;
     } on DioException catch (e) {
@@ -77,7 +110,9 @@ class UserService {
   static Future<Map<String, dynamic>> _fetch() async {
     try {
       final response = await DioClient.instance.get(ApiRouteConfig.usersMe);
-      return _profile = response.data['data'] as Map<String, dynamic>;
+      _profile = response.data['data'] as Map<String, dynamic>;
+      await _cacheProfile(_profile!);
+      return _profile!;
     } catch (_) {
       _pending = null;
       rethrow;

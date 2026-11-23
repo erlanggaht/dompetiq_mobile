@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/core/cache_manager.dart';
+import 'package:flutter_application_1/feat/user/user_service.dart';
 
 class CardService {
   final Dio _dio = DioClient.instance;
@@ -9,13 +11,27 @@ class CardService {
       e.response?.data?['error']?['message'] ?? fallback;
 
   Future<Map<String, dynamic>> load({bool isPrimary = false}) async {
+    final userId = '${(await UserService.me())['id']}';
+    final key = isPrimary ? 'card.primary' : 'cards';
+    final cached = await CacheManager.read(key: key, userId: userId);
+    if (cached != null && !cached.stale) {
+      return (cached.data as Map).cast<String, dynamic>();
+    }
     try {
       final response = await _dio.get(
         ApiRouteConfig.myCard,
         queryParameters: {'isPrimary': isPrimary},
       );
-      return (response.data['data'] as Map).cast<String, dynamic>();
+      final result = (response.data['data'] as Map).cast<String, dynamic>();
+      await CacheManager.write(
+        key: key,
+        userId: userId,
+        data: result,
+        ttl: const Duration(minutes: 5),
+      );
+      return result;
     } on DioException catch (e) {
+      if (cached != null) return (cached.data as Map).cast<String, dynamic>();
       throw Exception(_message(e, 'Failed to load cards'));
     }
   }
@@ -39,6 +55,7 @@ class CardService {
           ],
         },
       );
+      await CacheManager.clearAll();
     } on DioException catch (e) {
       throw Exception(_message(e, 'Failed to add card'));
     }
@@ -50,6 +67,7 @@ class CardService {
         ApiRouteConfig.changeCardStatus,
         data: {'rekeningUserId': rekeningUserId, 'isActive': isActive},
       );
+      await CacheManager.clearAll();
     } on DioException catch (e) {
       throw Exception(_message(e, 'Failed to update card status'));
     }
@@ -61,6 +79,7 @@ class CardService {
         ApiRouteConfig.changePrimaryCard,
         data: {'rekeningUserId': rekeningUserId},
       );
+      await CacheManager.clearAll();
     } on DioException catch (e) {
       throw Exception(_message(e, 'Failed to set primary card'));
     }
@@ -77,6 +96,7 @@ class CardService {
             ? null
             : {'targetRekeningUserId': targetRekeningUserId},
       );
+      await CacheManager.clearAll();
       return (response.data['data'] as Map?)?.cast<String, dynamic>() ?? {};
     } on DioException catch (e) {
       throw Exception(_message(e, 'Failed to close card'));
