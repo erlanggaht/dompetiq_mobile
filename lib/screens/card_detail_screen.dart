@@ -6,8 +6,14 @@ import 'package:flutter_application_1/widgets/card_visual.dart';
 class CardDetailScreen extends StatefulWidget {
   final Map<String, dynamic> card;
   final int index;
+  final List<Map<String, dynamic>> cards;
 
-  const CardDetailScreen({super.key, required this.card, required this.index});
+  const CardDetailScreen({
+    super.key,
+    required this.card,
+    required this.index,
+    required this.cards,
+  });
 
   @override
   State<CardDetailScreen> createState() => _CardDetailScreenState();
@@ -15,6 +21,80 @@ class CardDetailScreen extends StatefulWidget {
 
 class _CardDetailScreenState extends State<CardDetailScreen> {
   final _service = CardService();
+  bool _busy = false;
+
+  Future<void> _closeCard() async {
+    if (_busy) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Close card?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Close card'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      var result = await _service.close(widget.card['rekeningUserId'] as int);
+      if (result['needTransfer'] == true) {
+        if (!mounted) return;
+        final targetId = await showModalBottomSheet<int>(
+          context: context,
+          builder: (context) => SafeArea(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                const ListTile(title: Text('Move balance to')),
+                for (final other in widget.cards.where(
+                  (item) =>
+                      item['rekeningUserId'] != widget.card['rekeningUserId'],
+                ))
+                  ListTile(
+                    title: Text(other['name'] as String? ?? 'Account'),
+                    onTap: () => Navigator.pop(
+                      context,
+                      (other['rekeningUserId'] as num).toInt(),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+        if (targetId == null) return;
+        result = await _service.close(
+          widget.card['rekeningUserId'] as int,
+          targetRekeningUserId: targetId,
+        );
+        if (result['needTransfer'] == true) {
+          throw Exception('Could not transfer the card balance');
+        }
+      }
+      if (!mounted) return;
+      Navigator.pop(context, true);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Card closed successfully')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   Future<void> _setActive(bool active) async {
     if (widget.card['name'] == 'Uang Tunai' && !active) return;
@@ -70,25 +150,12 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
               ),
             if (widget.card['name'] != 'Uang Tunai')
               ListTile(
+                enabled: !_busy,
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: const Text('Close card'),
-                onTap: () async {
+                onTap: () {
                   Navigator.pop(context);
-                  final result = await _service.close(
-                    widget.card['rekeningUserId'] as int,
-                  );
-                  if (!context.mounted) return;
-                  if (result['needTransfer'] == true) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Transfer the balance before closing this card.',
-                        ),
-                      ),
-                    );
-                  } else {
-                    Navigator.pop(context, true);
-                  }
+                  _closeCard();
                 },
               ),
           ],

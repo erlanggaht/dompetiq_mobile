@@ -75,22 +75,6 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  void _comingSoon(String title) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$title is not available yet')));
-  }
-
-  void _showAbout() {
-    Navigator.pop(context);
-    showAboutDialog(
-      context: context,
-      applicationName: 'DompetIQ',
-      applicationVersion: '1.0.0',
-      applicationLegalese: 'Personal finance management',
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -158,16 +142,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   );
                 },
-              ),
-              _DrawerItem(
-                icon: PhosphorIconsRegular.question,
-                title: 'Help & Support',
-                onTap: () => _comingSoon('Help & Support'),
-              ),
-              _DrawerItem(
-                icon: PhosphorIconsRegular.info,
-                title: 'About DompetIQ',
-                onTap: _showAbout,
               ),
               const Spacer(),
               SizedBox(

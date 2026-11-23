@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 
 import '../../core/config.dart';
 import '../../core/network/dio_client.dart';
+import '../user/user_service.dart';
+import '../../core/cache_manager.dart';
 
 String apiDate(DateTime value) {
   final m = value.month.toString().padLeft(2, '0');
@@ -18,27 +20,74 @@ class TransactionPage {
 
 class TransactionService {
   final Dio _dio = DioClient.instance;
+  static List<Map<String, dynamic>>? _categoriesCache;
+  static List<Map<String, dynamic>>? _rekeningsCache;
+
+  static void clearOptionsCache() {
+    _categoriesCache = null;
+    _rekeningsCache = null;
+  }
 
   Future<List<Map<String, dynamic>>> categories() async {
+    if (_categoriesCache != null) return _categoriesCache!;
+    final userId = await _userId();
+    final cached = await CacheManager.read(key: 'categories', userId: userId);
+    if (cached != null && !cached.stale) {
+      final result = (cached.data as List).cast<Map<String, dynamic>>();
+      _categoriesCache = result;
+      return result;
+    }
     try {
       final response = await _dio.get(
         ApiRouteConfig.categoryMe,
         queryParameters: {'flat': 'true', 'language': 'en'},
       );
-      return (response.data['data'] as List).cast<Map<String, dynamic>>();
+      final result = (response.data['data'] as List)
+          .cast<Map<String, dynamic>>();
+      _categoriesCache = result;
+      await CacheManager.write(
+        key: 'categories',
+        userId: userId,
+        data: result,
+        ttl: const Duration(hours: 24),
+      );
+      return result;
     } on DioException catch (e) {
+      if (cached != null) {
+        return (cached.data as List).cast<Map<String, dynamic>>();
+      }
       throw Exception(_message(e, 'Failed to load categories'));
     }
   }
 
   Future<List<Map<String, dynamic>>> rekenings() async {
+    if (_rekeningsCache != null) return _rekeningsCache!;
+    final userId = await _userId();
+    final cached = await CacheManager.read(key: 'rekenings', userId: userId);
+    if (cached != null && !cached.stale) {
+      final result = (cached.data as List).cast<Map<String, dynamic>>();
+      _rekeningsCache = result;
+      return result;
+    }
     try {
       final response = await _dio.get(
         ApiRouteConfig.rekeningMe,
         queryParameters: {'flat': 'true'},
       );
-      return (response.data['data'] as List).cast<Map<String, dynamic>>();
+      final result = (response.data['data'] as List)
+          .cast<Map<String, dynamic>>();
+      _rekeningsCache = result;
+      await CacheManager.write(
+        key: 'rekenings',
+        userId: userId,
+        data: result,
+        ttl: const Duration(minutes: 5),
+      );
+      return result;
     } on DioException catch (e) {
+      if (cached != null) {
+        return (cached.data as List).cast<Map<String, dynamic>>();
+      }
       throw Exception(_message(e, 'Failed to load accounts'));
     }
   }
@@ -157,4 +206,9 @@ class TransactionService {
 
   String _message(DioException e, String fallback) =>
       e.response?.data?['error']?['message'] ?? fallback;
+
+  Future<String> _userId() async {
+    final profile = await UserService.me();
+    return '${profile['id']}';
+  }
 }

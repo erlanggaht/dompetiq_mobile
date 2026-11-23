@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/balance_visibility.dart';
 
 class CardVisual extends StatelessWidget {
   final String name;
@@ -54,11 +55,17 @@ class CardVisual extends StatelessWidget {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
-                Text(
-                  '•••• $last4 · ${formatRupiah(saldo)}',
-                  style: const TextStyle(
-                    color: Color(0xFF667085),
-                    fontSize: 12,
+                ValueListenableBuilder<bool>(
+                  valueListenable: BalanceVisibility.visible,
+                  builder: (context, visible, _) => GestureDetector(
+                    onTap: BalanceVisibility.toggle,
+                    child: Text(
+                      '•••• $last4 · ${visible ? formatRupiah(saldo) : '••••••'}',
+                      style: const TextStyle(
+                        color: Color(0xFF667085),
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -121,12 +128,18 @@ class CardVisual extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                formatRupiah(saldo),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              ValueListenableBuilder<bool>(
+                valueListenable: BalanceVisibility.visible,
+                builder: (context, visible, _) => GestureDetector(
+                  onTap: BalanceVisibility.toggle,
+                  child: Text(
+                    visible ? formatRupiah(saldo) : '••••••',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

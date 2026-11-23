@@ -47,6 +47,12 @@ class ToolsScreen extends StatelessWidget {
         onTap: onOpenTransactions,
       ),
       _Tool(
+        'Cards',
+        PhosphorIconsRegular.creditCard,
+        onOpenCards == null ? const CardsScreen(showBottomNav: true) : null,
+        onTap: onOpenCards,
+      ),
+      _Tool(
         'Budget',
         PhosphorIconsRegular.chartPieSlice,
         onOpenBudget == null
@@ -84,12 +90,6 @@ class ToolsScreen extends StatelessWidget {
               )
             : null,
         onTap: onOpenReport,
-      ),
-      _Tool(
-        'Cards',
-        PhosphorIconsRegular.creditCard,
-        onOpenCards == null ? const CardsScreen(showBottomNav: true) : null,
-        onTap: onOpenCards,
       ),
     ];
 

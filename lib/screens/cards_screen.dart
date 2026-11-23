@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/feat/card/card_service.dart';
+import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/card_detail_screen.dart';
 import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 import 'package:flutter_application_1/widgets/card_visual.dart';
@@ -29,6 +30,7 @@ class _CardsScreenState extends State<CardsScreen> {
   List<Map<String, dynamic>> _accounts = [];
   int? _primaryId;
   bool _loading = true;
+  bool _addingCard = false;
   String? _error;
 
   @override
@@ -73,6 +75,8 @@ class _CardsScreenState extends State<CardsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
   Future<void> _addCard() async {
+    if (_addingCard) return;
+    setState(() => _addingCard = true);
     try {
       _accounts = await _service.availableAccounts();
       final existing = _cards.map((e) => e['name']).toSet();
@@ -82,35 +86,46 @@ class _CardsScreenState extends State<CardsScreen> {
       if (!mounted) return;
       final selected = await showModalBottomSheet<Map<String, dynamic>>(
         context: context,
-        builder: (context) => SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const ListTile(
-                title: Text(
-                  'Add card',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+        builder: (context) {
+          var selecting = false;
+          return SafeArea(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                const ListTile(
+                  title: Text(
+                    'Add card',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              for (final account in choices)
-                ListTile(
-                  title: Text(account['name'] as String? ?? ''),
-                  onTap: () => Navigator.pop(context, account),
-                ),
-              if (choices.isEmpty)
-                const ListTile(title: Text('No available cards')),
-            ],
-          ),
-        ),
+                for (final account in choices)
+                  ListTile(
+                    enabled: !selecting,
+                    title: Text(account['name'] as String? ?? ''),
+                    onTap: () {
+                      if (selecting) return;
+                      selecting = true;
+                      Navigator.pop(context, account);
+                    },
+                  ),
+                if (choices.isEmpty)
+                  const ListTile(title: Text('No available cards')),
+              ],
+            ),
+          );
+        },
       );
       if (selected == null) return;
       await _service.add(
         accountId: selected['id'] as int,
         name: selected['name'] as String,
       );
+      TransactionService.clearOptionsCache();
       await _load();
     } catch (e) {
       _message(e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _addingCard = false);
     }
   }
 
@@ -175,6 +190,7 @@ class _CardsScreenState extends State<CardsScreen> {
                                           builder: (_) => CardDetailScreen(
                                             card: card,
                                             index: index,
+                                            cards: _cards,
                                           ),
                                         ),
                                       );
@@ -252,9 +268,9 @@ class _CardsScreenState extends State<CardsScreen> {
               bottom: 104,
               child: Center(
                 child: FilledButton.icon(
-                  onPressed: _addCard,
+                  onPressed: _addingCard ? null : _addCard,
                   icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Add card'),
+                  label: Text(_addingCard ? 'Adding...' : 'Add card'),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF3B62FF),
                     foregroundColor: Colors.white,
