@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/device_id.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -15,18 +16,22 @@ import 'package:flutter_application_1/widgets/profile_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onDataReset;
+  final ValueChanged<bool>? onServerError;
 
-  const ProfileScreen({super.key, this.onDataReset});
+  const ProfileScreen({super.key, this.onDataReset, this.onServerError});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreenState extends State<ProfileScreen> {
   String _name = '';
   String _username = '';
   String? _avatar;
   bool _isSigningOut = false;
+  bool _loading = true;
+  bool _hasData = false;
+  String? _error;
 
   @override
   void initState() {
@@ -35,6 +40,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _load() async {
+    if (!_hasData) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final data = await UserService.me();
       if (!mounted) return;
@@ -42,11 +53,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _name = (data['fullName'] as String?) ?? '';
         _username = (data['username'] as String?) ?? '';
         _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
+        _loading = false;
+        _hasData = true;
+        _error = null;
       });
-    } catch (_) {
-      return;
+      widget.onServerError?.call(false);
+    } catch (e) {
+      if (!mounted) return;
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
+      if (_hasData) {
+        setState(() => _loading = false);
+      } else {
+        setState(() {
+          _loading = false;
+          _error = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
     }
   }
+
+  Future<void> reload() => _load();
 
   Future<void> _editProfile() async {
     try {
@@ -86,83 +113,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(36, 0, 36, 120),
-          child: Column(
-            children: [
-              const AppPageHeader(title: 'Profile', showBack: false),
-              const SizedBox(height: 28),
-              ProfileAvatar(
-                imageUrl: _avatar,
-                name: name,
-                radius: 34,
-                backgroundColor: const Color(0xFFF2F4F7),
-                initialFontSize: 28,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF101828),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                username,
-                style: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
-              ),
-              const SizedBox(height: 26),
-              SizedBox(
-                width: 146,
-                height: 44,
-                child: FilledButton(
-                  onPressed: _editProfile,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(9),
+        child: _loading && !_hasData
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null && !_hasData
+            ? Column(
+                children: [
+                  const AppPageHeader(title: 'Profile', showBack: false),
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_error!, textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed: _load,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Edit Profile',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                ],
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(36, 0, 36, 120),
+                child: Column(
+                  children: [
+                    const AppPageHeader(title: 'Profile', showBack: false),
+                    const SizedBox(height: 28),
+                    ProfileAvatar(
+                      imageUrl: _avatar,
+                      name: name,
+                      radius: 34,
+                      backgroundColor: const Color(0xFFF2F4F7),
+                      initialFontSize: 28,
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF101828),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      username,
+                      style: const TextStyle(
+                        color: Color(0xFF98A2B3),
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    SizedBox(
+                      width: 146,
+                      height: 44,
+                      child: FilledButton(
+                        onPressed: _editProfile,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B62FF),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                        child: const Text(
+                          'Edit Profile',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 34),
+                    const Divider(color: Color(0xFFE4E7EC), height: 1),
+                    _ProfileMenuTile(
+                      icon: PhosphorIconsRegular.gear,
+                      title: 'Settings',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              SettingsScreen(onDataReset: widget.onDataReset),
+                        ),
+                      ),
+                    ),
+                    const Divider(color: Color(0xFFE4E7EC), height: 1),
+                    _ProfileMenuTile(
+                      icon: PhosphorIconsRegular.signOut,
+                      title: 'Log out',
+                      danger: true,
+                      onTap: _isSigningOut ? null : _logout,
+                      trailing: _isSigningOut
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 34),
-              const Divider(color: Color(0xFFE4E7EC), height: 1),
-              _ProfileMenuTile(
-                icon: PhosphorIconsRegular.gear,
-                title: 'Settings',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        SettingsScreen(onDataReset: widget.onDataReset),
-                  ),
-                ),
-              ),
-              const Divider(color: Color(0xFFE4E7EC), height: 1),
-              _ProfileMenuTile(
-                icon: PhosphorIconsRegular.signOut,
-                title: 'Log out',
-                danger: true,
-                onTap: _isSigningOut ? null : _logout,
-                trailing: _isSigningOut
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

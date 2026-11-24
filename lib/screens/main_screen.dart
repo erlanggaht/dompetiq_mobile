@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/budget_screen.dart';
@@ -25,8 +26,14 @@ class _MainScreenState extends State<MainScreen> {
   final _homeKey = GlobalKey<HomeScreenState>();
   final _transactionsKey = GlobalKey<TransactionsScreenState>();
   final _budgetKey = GlobalKey<BudgetScreenState>();
+  final _profileKey = GlobalKey<ProfileScreenState>();
+  final _savingsKey = GlobalKey<SavingsScreenState>();
+  final _reportKey = GlobalKey<ReportScreenState>();
+  final _cardsKey = GlobalKey<CardsScreenState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _hasUnread = false;
+  bool _reloadingAll = false;
+  final Set<String> _serverErrors = {};
 
   @override
   void initState() {
@@ -34,10 +41,28 @@ class _MainScreenState extends State<MainScreen> {
     _loadUnread();
   }
 
-  void _reloadAll() {
-    _homeKey.currentState?.reload();
-    _transactionsKey.currentState?.reload();
-    _budgetKey.currentState?.reload();
+  void _setServerError(String id, bool hasError) {
+    final changed = hasError ? _serverErrors.add(id) : _serverErrors.remove(id);
+    if (changed && mounted) setState(() {});
+  }
+
+  Future<void> _reloadAll() async {
+    if (_reloadingAll) return;
+    setState(() => _reloadingAll = true);
+    try {
+      await Future.wait([
+        _homeKey.currentState?.reload() ?? Future<void>.value(),
+        _transactionsKey.currentState?.reload() ?? Future<void>.value(),
+        _budgetKey.currentState?.reload() ?? Future<void>.value(),
+        _profileKey.currentState?.reload() ?? Future<void>.value(),
+        _savingsKey.currentState?.reload() ?? Future<void>.value(),
+        _reportKey.currentState?.reload() ?? Future<void>.value(),
+        _cardsKey.currentState?.reload() ?? Future<void>.value(),
+        _loadUnread(),
+      ]);
+    } finally {
+      if (mounted) setState(() => _reloadingAll = false);
+    }
   }
 
   void _openTools() => setState(() => _index = 4);
@@ -47,8 +72,9 @@ class _MainScreenState extends State<MainScreen> {
       final items = await NotificationService().list();
       if (!mounted) return;
       setState(() => _hasUnread = items.any((e) => e['readAt'] == null));
-    } catch (_) {
-      return;
+      _setServerError('notifications', false);
+    } catch (e) {
+      _setServerError('notifications', isServerConnectionError(e));
     }
   }
 
@@ -84,6 +110,7 @@ class _MainScreenState extends State<MainScreen> {
         onTransactionSaved: _reloadAll,
         onOpenTools: _openTools,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('home', v),
       ),
       TransactionsScreen(
         key: _transactionsKey,
@@ -91,14 +118,20 @@ class _MainScreenState extends State<MainScreen> {
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('transactions', v),
       ),
       BudgetScreen(
         key: _budgetKey,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('budget', v),
       ),
-      ProfileScreen(onDataReset: _reloadAll),
+      ProfileScreen(
+        key: _profileKey,
+        onDataReset: _reloadAll,
+        onServerError: (v) => _setServerError('profile', v),
+      ),
       ToolsScreen(
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
@@ -110,19 +143,25 @@ class _MainScreenState extends State<MainScreen> {
         onOpenCards: () => setState(() => _index = 7),
       ),
       SavingsScreen(
+        key: _savingsKey,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('savings', v),
       ),
       ReportScreen(
+        key: _reportKey,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('report', v),
       ),
       CardsScreen(
+        key: _cardsKey,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
+        onServerError: (v) => _setServerError('cards', v),
       ),
     ];
 
@@ -145,8 +184,97 @@ class _MainScreenState extends State<MainScreen> {
           onOpenTools: _openTools,
           onOpenCards: () => setState(() => _index = 7),
         ),
-        body: IndexedStack(index: _index, children: pages),
+        body: Stack(
+          children: [
+            IndexedStack(index: _index, children: pages),
+            if (_serverErrors.isNotEmpty)
+              Positioned.fill(child: _buildServerError()),
+          ],
+        ),
         bottomNavigationBar: _buildBottomBar(),
+      ),
+    );
+  }
+
+  Widget _buildServerError() {
+    return ColoredBox(
+      color: const Color(0xFFF8FAFC),
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEEF2FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    PhosphorIconsRegular.warningCircle,
+                    size: 44,
+                    color: Color(0xFF3B62FF),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                const Text(
+                  "Can't reach the server",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF101828),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "We couldn't connect right now. This may be caused by your internet connection or a temporary server issue. Please try again.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF667085),
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: _reloadingAll ? null : _reloadAll,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B62FF),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFB8C7FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: _reloadingAll
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Try again',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

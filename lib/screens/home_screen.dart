@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback? onTransactionSaved;
   final VoidCallback? onOpenTools;
   final bool hasUnreadNotifications;
+  final ValueChanged<bool>? onServerError;
 
   const HomeScreen({
     super.key,
@@ -29,6 +31,7 @@ class HomeScreen extends StatefulWidget {
     this.onTransactionSaved,
     this.onOpenTools,
     this.hasUnreadNotifications = false,
+    this.onServerError,
   });
 
   @override
@@ -105,9 +108,8 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void reload() {
-    _loadData();
-    _loadProfile(refresh: true);
+  Future<void> reload() async {
+    await Future.wait([_loadData(), _loadProfile(refresh: true)]);
   }
 
   Future<void> _openTransactionForm(String type) async {
@@ -206,6 +208,7 @@ class HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
         _error = null;
       });
+      widget.onServerError?.call(false);
       await _loadSummary(seq);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
@@ -222,17 +225,20 @@ class HomeScreenState extends State<HomeScreen> {
       }
       _onLoadFailed(
         seq,
+        e,
         e.response?.data?['error']?['message'] ?? 'Failed to load data',
       );
-    } catch (_) {
-      _onLoadFailed(seq, 'Failed to load data');
+    } catch (e) {
+      _onLoadFailed(seq, e, 'Failed to load data');
     }
   }
 
-  void _onLoadFailed(int seq, String message) {
+  void _onLoadFailed(int seq, Object error, String message) {
     if (!mounted || seq != _loadSeq) return;
+    final serverError = isServerConnectionError(error);
+    widget.onServerError?.call(serverError);
     if (_hasLoaded) {
-      _showSnack(message);
+      if (!serverError) _showSnack(message);
       return;
     }
     setState(() {

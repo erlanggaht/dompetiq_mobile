@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/budget/budget_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
@@ -13,6 +14,7 @@ class BudgetScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
   final bool showBottomNav;
+  final ValueChanged<bool>? onServerError;
 
   const BudgetScreen({
     super.key,
@@ -20,6 +22,7 @@ class BudgetScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
     this.showBottomNav = false,
+    this.onServerError,
   });
 
   @override
@@ -32,6 +35,7 @@ class BudgetScreenState extends State<BudgetScreen> {
   List<Map<String, dynamic>> _categories = [];
   String _periodType = 'monthly';
   bool _loading = true;
+  bool _hasData = false;
   String? _error;
 
   @override
@@ -41,7 +45,7 @@ class BudgetScreenState extends State<BudgetScreen> {
   }
 
   Future<void> _load({bool showLoading = true}) async {
-    if (showLoading) {
+    if (showLoading && !_hasData) {
       setState(() {
         _loading = true;
         _error = null;
@@ -57,18 +61,28 @@ class BudgetScreenState extends State<BudgetScreen> {
         _periods = results[0].map(_BudgetPeriod.fromJson).toList();
         _categories = results[1].where((c) => c['type'] == 'Spending').toList();
         _loading = false;
+        _hasData = true;
         _error = null;
       });
+      widget.onServerError?.call(false);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
-        _loading = false;
-      });
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
+      final message = e.toString().replaceFirst('Exception: ', '');
+      if (_hasData) {
+        setState(() => _loading = false);
+        if (!serverError) _showMessage(message);
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
     }
   }
 
-  void reload() => _load(showLoading: false);
+  Future<void> reload() => _load(showLoading: false);
 
   // Latest period is not always the active one (weekly periods expire).
   _BudgetPeriod? get _current {

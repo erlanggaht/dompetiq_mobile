@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/card/card_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/card_detail_screen.dart';
@@ -11,6 +12,7 @@ class CardsScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
   final bool showBottomNav;
+  final ValueChanged<bool>? onServerError;
 
   const CardsScreen({
     super.key,
@@ -18,19 +20,21 @@ class CardsScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
     this.showBottomNav = false,
+    this.onServerError,
   });
 
   @override
-  State<CardsScreen> createState() => _CardsScreenState();
+  State<CardsScreen> createState() => CardsScreenState();
 }
 
-class _CardsScreenState extends State<CardsScreen> {
+class CardsScreenState extends State<CardsScreen> {
   final _service = CardService();
   List<Map<String, dynamic>> _cards = [];
   List<Map<String, dynamic>> _accounts = [];
   int? _primaryId;
   bool _loading = true;
   bool _addingCard = false;
+  bool _hasData = false;
   String? _error;
 
   @override
@@ -40,10 +44,12 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (!_hasData) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final data = await _service.load();
       final primaryData = await _service.load(isPrimary: true);
@@ -61,15 +67,28 @@ class _CardsScreenState extends State<CardsScreen> {
             ? (primary['rekeningUserId'] as num?)?.toInt()
             : null;
         _loading = false;
+        _hasData = true;
+        _error = null;
       });
+      widget.onServerError?.call(false);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
-        _loading = false;
-      });
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
+      final message = e.toString().replaceFirst('Exception: ', '');
+      if (_hasData) {
+        setState(() => _loading = false);
+        if (!serverError) _message(message);
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
     }
   }
+
+  Future<void> reload() => _load();
 
   void _message(String text) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
@@ -151,7 +170,22 @@ class _CardsScreenState extends State<CardsScreen> {
                   child: _loading
                       ? const Center(child: CircularProgressIndicator())
                       : _error != null
-                      ? Center(child: Text(_error!))
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_error!, textAlign: TextAlign.center),
+                                const SizedBox(height: 16),
+                                OutlinedButton(
+                                  onPressed: _load,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                       : _cards.isEmpty
                       ? const Center(child: Text('No cards yet'))
                       : RefreshIndicator(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/report/report_service.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
 import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
@@ -47,6 +48,7 @@ class ReportScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
   final bool showBottomNav;
+  final ValueChanged<bool>? onServerError;
 
   const ReportScreen({
     super.key,
@@ -54,18 +56,20 @@ class ReportScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
     this.showBottomNav = false,
+    this.onServerError,
   });
 
   @override
-  State<ReportScreen> createState() => _ReportScreenState();
+  State<ReportScreen> createState() => ReportScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen> {
+class ReportScreenState extends State<ReportScreen> {
   final _service = ReportService();
   late final DateTime _now;
   late DateTime _month;
   Map<String, dynamic> _data = {};
   bool _loading = true;
+  bool _hasData = false;
   String? _error;
 
   @override
@@ -77,25 +81,43 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (!_hasData) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final data = await _service.monthlySummary(reportMonthKey(_month));
       if (!mounted) return;
       setState(() {
         _data = data;
         _loading = false;
+        _hasData = true;
+        _error = null;
       });
+      widget.onServerError?.call(false);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
-        _loading = false;
-      });
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
+      final message = e.toString().replaceFirst('Exception: ', '');
+      if (_hasData) {
+        setState(() => _loading = false);
+        if (!serverError && mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        }
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
     }
   }
+
+  Future<void> reload() => _load();
 
   void _shiftMonth(int offset) {
     setState(() => _month = DateTime(_month.year, _month.month + offset));

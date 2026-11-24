@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/transaction_detail_screen.dart';
@@ -27,6 +28,7 @@ class TransactionsScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
   final bool showBottomNav;
+  final ValueChanged<bool>? onServerError;
 
   const TransactionsScreen({
     super.key,
@@ -35,6 +37,7 @@ class TransactionsScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
     this.showBottomNav = false,
+    this.onServerError,
   });
 
   @override
@@ -79,7 +82,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
     super.dispose();
   }
 
-  void reload() => _load();
+  Future<void> reload() => _load();
 
   void _onScroll() {
     if (!_scroll.hasClients) return;
@@ -205,12 +208,18 @@ class TransactionsScreenState extends State<TransactionsScreen> {
         _isLoading = false;
         _error = null;
       });
+      widget.onServerError?.call(false);
     } catch (e) {
       if (!mounted || seq != _loadSeq) return;
       final message = e.toString().replaceFirst('Exception: ', '');
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
       if (_hasLoaded) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(message)));
+        setState(() => _isLoading = false);
+        if (!serverError) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        }
         return;
       }
       setState(() {

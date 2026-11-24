@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/savings/savings_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
@@ -16,6 +17,7 @@ class SavingsScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
   final bool showBottomNav;
+  final ValueChanged<bool>? onServerError;
 
   const SavingsScreen({
     super.key,
@@ -24,17 +26,19 @@ class SavingsScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
     this.showBottomNav = false,
+    this.onServerError,
   });
 
   @override
-  State<SavingsScreen> createState() => _SavingsScreenState();
+  State<SavingsScreen> createState() => SavingsScreenState();
 }
 
-class _SavingsScreenState extends State<SavingsScreen> {
+class SavingsScreenState extends State<SavingsScreen> {
   final _service = SavingsService();
   List<Map<String, dynamic>> _goals = [];
   List<Map<String, dynamic>> _accounts = [];
   bool _loading = true;
+  bool _hasData = false;
   String? _error;
 
   @override
@@ -44,7 +48,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
   }
 
   Future<void> _load({bool showLoading = true}) async {
-    if (showLoading) {
+    if (showLoading && !_hasData) {
       setState(() {
         _loading = true;
         _error = null;
@@ -58,16 +62,28 @@ class _SavingsScreenState extends State<SavingsScreen> {
         _accounts = (data['accounts'] as List? ?? [])
             .cast<Map<String, dynamic>>();
         _loading = false;
+        _hasData = true;
         _error = null;
       });
+      widget.onServerError?.call(false);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = _message(e);
-        _loading = false;
-      });
+      final serverError = isServerConnectionError(e);
+      widget.onServerError?.call(serverError);
+      final message = _message(e);
+      if (_hasData) {
+        setState(() => _loading = false);
+        if (!serverError) _showMessage(message);
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
     }
   }
+
+  Future<void> reload() => _load(showLoading: false);
 
   String _message(Object e) => e.toString().replaceFirst('Exception: ', '');
 
