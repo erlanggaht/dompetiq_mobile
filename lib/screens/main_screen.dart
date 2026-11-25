@@ -200,6 +200,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       SavingsScreen(
         key: _savingsKey,
+        onChanged: _reloadAll,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,

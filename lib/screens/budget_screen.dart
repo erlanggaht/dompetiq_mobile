@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
+import 'package:flutter_application_1/feat/budget/budget_model.dart';
 import 'package:flutter_application_1/feat/budget/budget_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
@@ -31,7 +32,7 @@ class BudgetScreen extends StatefulWidget {
 
 class BudgetScreenState extends State<BudgetScreen> {
   final _service = BudgetService();
-  List<_BudgetPeriod> _periods = [];
+  List<BudgetPeriod> _periods = [];
   List<Map<String, dynamic>> _categories = [];
   String _periodType = 'monthly';
   bool _loading = true;
@@ -58,7 +59,7 @@ class BudgetScreenState extends State<BudgetScreen> {
       ]);
       if (!mounted) return;
       setState(() {
-        _periods = results[0].map(_BudgetPeriod.fromJson).toList();
+        _periods = results[0].map(BudgetPeriod.fromJson).toList();
         _categories = results[1].where((c) => c['type'] == 'Spending').toList();
         _loading = false;
         _hasData = true;
@@ -85,7 +86,7 @@ class BudgetScreenState extends State<BudgetScreen> {
   Future<void> reload() => _load(showLoading: false);
 
   // Latest period is not always the active one (weekly periods expire).
-  _BudgetPeriod? get _current {
+  BudgetPeriod? get _current {
     final today = _dayOnly(DateTime.now());
     for (final period in _periods) {
       final start = period.startDate;
@@ -229,7 +230,7 @@ class BudgetScreenState extends State<BudgetScreen> {
     ),
   );
 
-  Future<void> _openEditor(_BudgetItem? item) async {
+  Future<void> _openEditor(BudgetItem? item) async {
     if (_categories.isEmpty) {
       _showMessage('No spending category available');
       return;
@@ -451,7 +452,7 @@ class BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
-  Future<void> _delete(_BudgetItem item) async {
+  Future<void> _delete(BudgetItem item) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -483,69 +484,6 @@ class BudgetScreenState extends State<BudgetScreen> {
 }
 
 DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
-
-class _BudgetPeriod {
-  final int id;
-  final String name;
-  final String periodType;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final int totalAllocated;
-  final int totalSpent;
-  final List<_BudgetItem> items;
-
-  _BudgetPeriod({
-    required this.id,
-    required this.name,
-    required this.periodType,
-    required this.startDate,
-    required this.endDate,
-    required this.totalAllocated,
-    required this.totalSpent,
-    required this.items,
-  });
-
-  factory _BudgetPeriod.fromJson(Map<String, dynamic> json) => _BudgetPeriod(
-    id: (json['id'] as num).toInt(),
-    name: json['name'] as String? ?? '',
-    periodType: json['periodType'] as String? ?? 'monthly',
-    startDate: DateTime.tryParse(json['startDate'] as String? ?? '')?.toLocal(),
-    endDate: DateTime.tryParse(json['endDate'] as String? ?? '')?.toLocal(),
-    totalAllocated: (json['totalAllocated'] as num?)?.toInt() ?? 0,
-    totalSpent: (json['totalSpent'] as num?)?.toInt() ?? 0,
-    items: (json['items'] as List? ?? [])
-        .cast<Map<String, dynamic>>()
-        .map(_BudgetItem.fromJson)
-        .toList(),
-  );
-}
-
-class _BudgetItem {
-  final int id;
-  final int categoryUserId;
-  final int allocated;
-  final int spent;
-  final int remaining;
-  final String categoryName;
-
-  _BudgetItem({
-    required this.id,
-    required this.categoryUserId,
-    required this.allocated,
-    required this.spent,
-    required this.remaining,
-    required this.categoryName,
-  });
-
-  factory _BudgetItem.fromJson(Map<String, dynamic> json) => _BudgetItem(
-    id: (json['id'] as num).toInt(),
-    categoryUserId: (json['categoryUserId'] as num?)?.toInt() ?? 0,
-    allocated: (json['allocated'] as num?)?.toInt() ?? 0,
-    spent: (json['spent'] as num?)?.toInt() ?? 0,
-    remaining: (json['remaining'] as num?)?.toInt() ?? 0,
-    categoryName: json['categoryName'] as String? ?? 'Category',
-  );
-}
 
 class _PeriodToggle extends StatelessWidget {
   final String selected;
@@ -606,7 +544,7 @@ class _PeriodToggle extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  final _BudgetPeriod? period;
+  final BudgetPeriod? period;
 
   const _SummaryCard({required this.period});
 
@@ -705,7 +643,7 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _BudgetCard extends StatelessWidget {
-  final _BudgetItem item;
+  final BudgetItem item;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 

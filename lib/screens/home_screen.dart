@@ -5,6 +5,9 @@ import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
+import 'package:flutter_application_1/feat/budget/budget_service.dart';
+import 'package:flutter_application_1/feat/card/card_service.dart';
+import 'package:flutter_application_1/feat/savings/savings_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -12,6 +15,7 @@ import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/transaction_detail_screen.dart';
 import 'package:flutter_application_1/widgets/home_action_card.dart';
 import 'package:flutter_application_1/widgets/home_header.dart';
+import 'package:flutter_application_1/widgets/home_progress_section.dart';
 import 'package:flutter_application_1/widgets/home_transaction_section.dart';
 
 const _wib = Duration(hours: 7);
@@ -43,6 +47,9 @@ class HomeScreenState extends State<HomeScreen> {
   int _income = 0;
   int _spending = 0;
   List<Map<String, dynamic>> _transactions = [];
+  List<Map<String, dynamic>> _budgets = [];
+  List<Map<String, dynamic>> _cards = [];
+  List<Map<String, dynamic>> _savings = [];
   bool _isLoading = true;
   bool _hasLoaded = false;
   int _loadSeq = 0;
@@ -53,6 +60,9 @@ class HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadData();
     _loadProfile();
+    _loadBudgets();
+    _loadCards();
+    _loadSavings();
   }
 
   Future<void> _loadProfile({bool refresh = false}) async {
@@ -109,7 +119,50 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> reload() async {
-    await Future.wait([_loadData(), _loadProfile(refresh: true)]);
+    await Future.wait([
+      _loadData(),
+      _loadProfile(refresh: true),
+      _loadBudgets(),
+      _loadCards(),
+      _loadSavings(),
+    ]);
+  }
+
+  Future<void> _loadBudgets() async {
+    try {
+      final budgets = await BudgetService().budgets();
+      if (!mounted) return;
+      setState(() => _budgets = budgets);
+    } catch (_) {
+      return;
+    }
+  }
+
+  Future<void> _loadCards() async {
+    try {
+      final data = await CardService().load();
+      final raw = data['cardInfomation'];
+      final cards = raw is List
+          ? raw.cast<Map<String, dynamic>>()
+          : raw is Map
+          ? [raw.cast<String, dynamic>()]
+          : <Map<String, dynamic>>[];
+      if (!mounted) return;
+      setState(() => _cards = cards);
+    } catch (_) {
+      return;
+    }
+  }
+
+  Future<void> _loadSavings() async {
+    try {
+      final data = await SavingsService().load();
+      final goals = (data['goals'] as List? ?? []).cast<Map<String, dynamic>>();
+      if (!mounted) return;
+      setState(() => _savings = goals);
+    } catch (_) {
+      return;
+    }
   }
 
   Future<void> _openTransactionForm(String type) async {
@@ -297,7 +350,13 @@ class HomeScreenState extends State<HomeScreen> {
                       onSpending: () => _openTransactionForm('Spending'),
                       onTools: widget.onOpenTools ?? () {},
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
+                    HomeProgressSection(
+                      budgets: _budgets,
+                      cards: _cards,
+                      savings: _savings,
+                    ),
+                    const SizedBox(height: 28),
                     HomeTransactionSection(
                       transactions: _transactions,
                       onTap: _openDetail,
