@@ -4,7 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 const _categoryStyles = {
   'SALARY': (PhosphorIconsFill.briefcase, Color(0xFF3B62FF)),
   'BUSINESS': (PhosphorIconsFill.storefront, Color(0xFF6366F1)),
-  'INVESTMENT': (PhosphorIconsFill.trendUp, Color(0xFF0D9488)),
+  'INVESTMENT': (PhosphorIconsFill.chartLineUp, Color(0xFF0D9488)),
   'OTHER_INCOME': (PhosphorIconsFill.wallet, Color(0xFF16A34A)),
   'FOOD': (PhosphorIconsFill.forkKnife, Color(0xFFF59E0B)),
   'SHOP': (PhosphorIconsFill.shoppingBag, Color(0xFFA855F7)),

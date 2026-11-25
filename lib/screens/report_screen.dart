@@ -230,7 +230,6 @@ class ReportScreenState extends State<ReportScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEDEEF3)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),
@@ -308,7 +307,6 @@ class ReportScreenState extends State<ReportScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEDEEF3)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),
@@ -352,7 +350,7 @@ class ReportScreenState extends State<ReportScreen> {
               backgroundColor: const Color(0xFFEDEEF3),
               color: isIncome
                   ? const Color(0xFF16A34A)
-                  : const Color(0xFF3B62FF),
+                  : const Color(0xFFDC2626),
             ),
           ),
           const SizedBox(height: 6),
@@ -380,7 +378,6 @@ class ReportScreenState extends State<ReportScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEDEEF3)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),
@@ -444,7 +441,6 @@ class ReportScreenState extends State<ReportScreen> {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xFFEDEEF3)),
       boxShadow: const [
         BoxShadow(
           color: Color(0x0D000000),

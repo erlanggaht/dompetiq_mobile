@@ -7,6 +7,7 @@ import 'package:flutter_application_1/screens/report_screen.dart';
 import 'package:flutter_application_1/screens/savings_screen.dart';
 import 'package:flutter_application_1/screens/transactions_screen.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
+import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
 class ToolsScreen extends StatelessWidget {
   final VoidCallback? onOpenMenu;
@@ -164,7 +165,7 @@ class _ToolCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.icon, size: 28, color: const Color(0xFF3B62FF)),
+              SolidIconBadge(icon: item.icon, color: const Color(0xFF3B62FF)),
               const SizedBox(height: 10),
               Text(
                 item.title,

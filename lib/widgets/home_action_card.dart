@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
 class HomeActionCard extends StatelessWidget {
   final VoidCallback onIncome;
@@ -35,14 +36,14 @@ class HomeActionCard extends StatelessWidget {
             _ActionItem(
               icon: PhosphorIconsFill.trendUp,
               label: 'Income',
-              color: const Color(0xFF16A34A),
+              color: const Color(0xFF3B62FF),
               onTap: onIncome,
             ),
             _divider(),
             _ActionItem(
               icon: PhosphorIconsFill.trendDown,
               label: 'Spending',
-              color: const Color(0xFFDC2626),
+              color: const Color(0xFF3B62FF),
               onTap: onSpending,
             ),
             _divider(),
@@ -87,15 +88,7 @@ class _ActionItem extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: color, size: 22),
-                ),
+                SolidIconBadge(icon: icon, color: color),
                 const SizedBox(height: 8),
                 Text(
                   label,

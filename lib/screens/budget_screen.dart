@@ -733,7 +733,6 @@ class _BudgetCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEAECF0)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),

@@ -7,6 +7,7 @@ import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
 const _accent = Color(0xFF3B62FF);
 const _income = Color(0xFF16A34A);
@@ -213,6 +214,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         (_isIncome
             ? PhosphorIconsRegular.trendUp
             : PhosphorIconsRegular.trendDown);
+    final iconColor = style?.$2 ?? color;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -226,15 +228,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         children: [
           Row(
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(icon, color: color, size: 22),
-              ),
+              SolidIconBadge(icon: icon, color: iconColor, size: 46),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

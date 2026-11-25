@@ -350,39 +350,42 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _NavSlot(
-            icon: _index == 0
-                ? PhosphorIconsBold.house
-                : PhosphorIconsRegular.house,
-            active: _index == 0,
-            onTap: () => _onSlotTap(0),
-          ),
-          _NavSlot(
-            key: const ValueKey('tab-transactions'),
-            icon: _index == 1
-                ? PhosphorIconsBold.receipt
-                : PhosphorIconsRegular.receipt,
-            active: _index == 1,
-            onTap: () => _onSlotTap(1),
-          ),
-          _AddButton(onTap: () => _onSlotTap(2)),
-          _NavSlot(
-            icon: _index == 2
-                ? PhosphorIconsBold.chartPie
-                : PhosphorIconsRegular.chartPie,
-            active: _index == 2,
-            onTap: () => _onSlotTap(3),
-          ),
-          _NavSlot(
-            icon: _index == 3
-                ? PhosphorIconsBold.user
-                : PhosphorIconsRegular.user,
-            active: _index == 3,
-            onTap: () => _onSlotTap(4),
-          ),
-        ],
+      child: SizedBox(
+        height: 50,
+        child: Row(
+          children: [
+            _NavSlot(
+              icon: _index == 0
+                  ? PhosphorIconsBold.house
+                  : PhosphorIconsRegular.house,
+              active: _index == 0,
+              onTap: () => _onSlotTap(0),
+            ),
+            _NavSlot(
+              key: const ValueKey('tab-transactions'),
+              icon: _index == 1
+                  ? PhosphorIconsBold.receipt
+                  : PhosphorIconsRegular.receipt,
+              active: _index == 1,
+              onTap: () => _onSlotTap(1),
+            ),
+            _AddButton(onTap: () => _onSlotTap(2)),
+            _NavSlot(
+              icon: _index == 2
+                  ? PhosphorIconsBold.chartPie
+                  : PhosphorIconsRegular.chartPie,
+              active: _index == 2,
+              onTap: () => _onSlotTap(3),
+            ),
+            _NavSlot(
+              icon: _index == 3
+                  ? PhosphorIconsBold.user
+                  : PhosphorIconsRegular.user,
+              active: _index == 3,
+              onTap: () => _onSlotTap(4),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -403,15 +406,35 @@ class _NavSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(30),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Icon(
-            icon,
-            size: 26,
-            color: active ? const Color(0xFF1C1C1C) : const Color(0xFF9AA0AC),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(30),
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              width: 44,
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: active
+                    ? const Color(0xFF3B62FF).withValues(alpha: 0.10)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Icon(
+                icon,
+                size: 26,
+                color: active
+                    ? const Color(0xFF3B62FF)
+                    : const Color(0xFF9AA0AC),
+              ),
+            ),
           ),
         ),
       ),

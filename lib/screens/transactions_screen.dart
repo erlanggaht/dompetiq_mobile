@@ -314,30 +314,32 @@ class TransactionsScreenState extends State<TransactionsScreen> {
       'Spending' => const Color(0xFFDC2626),
       _ => _accent,
     };
-    return GestureDetector(
-      onTap: () {
-        if (_filter == label) return;
-        setState(() => _filter = label);
-        _apply();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.10) : _field,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected
-                ? color.withValues(alpha: 0.20)
-                : Colors.transparent,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          if (_filter == label) return;
+          setState(() => _filter = label);
+          _apply();
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? color : _field,
+            borderRadius: BorderRadius.circular(10),
           ),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? color : _muted,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? Colors.white : _muted,
+            ),
           ),
         ),
       ),

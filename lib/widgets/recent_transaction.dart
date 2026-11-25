@@ -3,7 +3,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
 class RecentTransactionWidget extends StatelessWidget {
   const RecentTransactionWidget({
@@ -96,6 +98,25 @@ class RecentTransactionWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Row(
             children: [
+              Builder(
+                builder: (context) {
+                  final category = item['category'] as String? ?? '';
+                  final style = categoryStyle(category);
+                  return SolidIconBadge(
+                    size: 40,
+                    icon: isTransfer
+                        ? PhosphorIconsRegular.arrowsLeftRight
+                        : style?.$1 ?? PhosphorIconsRegular.tag,
+                    color: isTransfer
+                        ? const Color(0xFF3B62FF)
+                        : style?.$2 ??
+                              (isIncome
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFF64748B)),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
