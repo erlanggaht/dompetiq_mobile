@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/network/server_error.dart';
+import 'package:flutter_application_1/feat/app_version/app_version_service.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
+import 'package:flutter_application_1/screens/app_update_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/screens/budget_screen.dart';
 import 'package:flutter_application_1/screens/home_screen.dart';
@@ -39,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadUnread();
+    _checkAppUpdate();
   }
 
   void _setServerError(String id, bool hasError) {
@@ -75,6 +80,57 @@ class _MainScreenState extends State<MainScreen> {
       _setServerError('notifications', false);
     } catch (e) {
       _setServerError('notifications', isServerConnectionError(e));
+    }
+  }
+
+  Future<void> _checkAppUpdate() async {
+    final info = await AppVersionService().check();
+    if (!mounted || info == null) return;
+    if (info.status == AppUpdateStatus.required) {
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AppUpdateScreen(
+            currentVersion: info.currentVersion,
+            latestVersion: info.latestVersion,
+            updateUrl: info.updateUrl,
+            releaseNotes: info.releaseNotes,
+          ),
+        ),
+      );
+      return;
+    }
+    if (info.status == AppUpdateStatus.optional) {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed = prefs.getString('dismissed_update_version');
+      if (dismissed == info.latestVersion || !mounted) return;
+      final shouldUpdate = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Update available'),
+          content: Text(
+            'A new version of DompetIQ (${info.latestVersion}) is available. You are currently using version ${info.currentVersion}.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Later'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Update'),
+            ),
+          ],
+        ),
+      );
+      if (shouldUpdate == true) {
+        final uri = Uri.tryParse(info.updateUrl);
+        if (uri != null) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      } else {
+        await prefs.setString('dismissed_update_version', info.latestVersion);
+      }
     }
   }
 

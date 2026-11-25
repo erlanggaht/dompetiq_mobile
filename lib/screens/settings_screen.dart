@@ -1,19 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/feat/app_version/app_version_service.dart';
 import 'package:flutter_application_1/feat/settings/delete_account_service.dart';
 import 'package:flutter_application_1/feat/settings/reset_data_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
+import 'package:flutter_application_1/screens/app_update_screen.dart';
 import 'package:flutter_application_1/screens/change_password_screen.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   final VoidCallback? onDataReset;
 
   const SettingsScreen({super.key, this.onDataReset});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _currentVersion = '';
+  bool _checkingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() => _currentVersion = info.version);
+  }
+
+  Future<void> _checkForUpdates() async {
+    if (_checkingUpdate) return;
+    setState(() => _checkingUpdate = true);
+    try {
+      final info = await AppVersionService().check();
+      if (!mounted) return;
+      if (info == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to check for updates.')),
+        );
+        return;
+      }
+      if (info.status == AppUpdateStatus.required) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AppUpdateScreen(
+              currentVersion: info.currentVersion,
+              latestVersion: info.latestVersion,
+              updateUrl: info.updateUrl,
+              releaseNotes: info.releaseNotes,
+            ),
+          ),
+        );
+        return;
+      }
+      if (info.status == AppUpdateStatus.optional) {
+        final shouldUpdate = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Update available'),
+            content: Text(
+              'A new version of DompetIQ (${info.latestVersion}) is available. You are currently using version ${info.currentVersion}.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Later'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Update'),
+              ),
+            ],
+          ),
+        );
+        if (shouldUpdate == true) {
+          final uri = Uri.tryParse(info.updateUrl);
+          if (uri != null) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        }
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('DompetIQ is up to date ($_currentVersion).')),
+      );
+    } finally {
+      if (mounted) setState(() => _checkingUpdate = false);
+    }
+  }
 
   void _comingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context)
@@ -87,7 +173,7 @@ class SettingsScreen extends StatelessWidget {
       if (!context.mounted) return;
       Navigator.pop(context);
       if (context.mounted) Navigator.pop(context, true);
-      onDataReset?.call();
+      widget.onDataReset?.call();
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -234,6 +320,21 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const _SettingsSectionTitle('About'),
                   _SettingsTile(
+                    icon: PhosphorIconsRegular.arrowClockwise,
+                    title: 'Check for updates',
+                    subtitle: _currentVersion.isEmpty
+                        ? null
+                        : 'Current version $_currentVersion',
+                    trailing: _checkingUpdate
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    onTap: _checkingUpdate ? null : _checkForUpdates,
+                  ),
+                  _SettingsTile(
                     icon: PhosphorIconsRegular.info,
                     title: 'About DompetIQ',
                     onTap: () => _comingSoon(context, 'About DompetIQ'),
@@ -272,13 +373,17 @@ class _SettingsSectionTitle extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final VoidCallback onTap;
+  final String? subtitle;
+  final VoidCallback? onTap;
+  final Widget? trailing;
   final bool danger;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
-    required this.onTap,
+    this.subtitle,
+    this.onTap,
+    this.trailing,
     this.danger = false,
   });
 
@@ -299,7 +404,17 @@ class _SettingsTile extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          trailing: Icon(PhosphorIconsRegular.caretRight, color: color),
+          subtitle: subtitle == null
+              ? null
+              : Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    color: Color(0xFF667085),
+                    fontSize: 13,
+                  ),
+                ),
+          trailing:
+              trailing ?? Icon(PhosphorIconsRegular.caretRight, color: color),
           onTap: onTap,
         ),
         const Divider(color: Color(0xFFE4E7EC), height: 1),

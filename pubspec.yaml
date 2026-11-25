@@ -10,6 +10,8 @@ dependencies:
   dio: ^5.11.1
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.5.3
+  package_info_plus: ^8.3.0
+  url_launcher: ^6.3.1
   flutter:
     sdk: flutter
   android_id: ^1.0.0

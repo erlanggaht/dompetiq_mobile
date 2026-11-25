@@ -5,6 +5,7 @@ class ApiRouteConfig {
   static const String logout = '/auth/logout';
   static const String register = '/auth/create-account';
   static const String rekenings = '/general/rekenings';
+  static const String appVersion = '/general/app-version';
   static const String resetPasswordSend = '/auth/reset-password/send';
   static const String pinResetSend = '/auth/reset-pin/send';
   static const String limitDevice = '/auth/limit-device';
