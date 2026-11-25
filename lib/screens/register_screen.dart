@@ -4,8 +4,6 @@ import 'package:flutter_application_1/feat/auth/register_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/widgets/app_password_field.dart';
 import 'package:flutter_application_1/widgets/app_text_field.dart';
-import 'package:flutter_application_1/widgets/app_date_field.dart';
-import 'package:flutter_application_1/widgets/app_select_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,9 +18,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _fullNameController = TextEditingController();
-  DateTime? _birthDate;
-  String _gender = 'male';
   bool _isLoading = false;
 
   @override
@@ -31,7 +26,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _fullNameController.dispose();
     super.dispose();
   }
 
@@ -40,37 +34,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String get _birthDateText {
-    if (_birthDate == null) return '';
-    final m = _birthDate!.month.toString().padLeft(2, '0');
-    final d = _birthDate!.day.toString().padLeft(2, '0');
-    return '$m-$d-${_birthDate!.year}';
-  }
-
-  Future<void> _pickBirthDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() => _birthDate = picked);
-    }
-  }
-
   Future<void> _handleRegister() async {
     final email = _emailController.text.trim();
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
-    final fullName = _fullNameController.text.trim();
 
-    if (email.isEmpty ||
-        username.isEmpty ||
-        password.isEmpty ||
-        fullName.isEmpty ||
-        _birthDate == null) {
+    if (email.isEmpty || username.isEmpty || password.isEmpty) {
       _showSnack('All fields are required');
       return;
     }
@@ -101,9 +71,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: email,
         username: username,
         password: password,
-        fullName: fullName,
-        age: _birthDateText,
-        gender: _gender,
       );
 
       if (!mounted) return;
@@ -150,43 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 label: 'Username',
                 prefixIcon: Icons.person_outline,
               ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _fullNameController,
-                label: 'Full Name',
-                prefixIcon: Icons.badge_outlined,
-              ),
-              const SizedBox(height: 16),
-              AppDateField(
-                label: 'Date of Birth',
-                valueLabel: _birthDate == null ? null : _birthDateText,
-                onTap: _pickBirthDate,
-              ),
-              const SizedBox(height: 16),
-              AppSelectField<String>(
-                label: 'Gender',
-                value: _gender,
-                valueLabel: _gender == 'male' ? 'Male' : 'Female',
-                onTap: () async {
-                  final value = await showModalBottomSheet<String>(
-                    context: context,
-                    builder: (context) => ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (final item in const [
-                          ('male', 'Male'),
-                          ('female', 'Female'),
-                        ])
-                          ListTile(
-                            title: Text(item.$2),
-                            onTap: () => Navigator.pop(context, item.$1),
-                          ),
-                      ],
-                    ),
-                  );
-                  if (value != null) setState(() => _gender = value);
-                },
-              ),
+
               const SizedBox(height: 16),
               AppPasswordField(
                 controller: _passwordController,

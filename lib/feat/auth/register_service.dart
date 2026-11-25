@@ -10,9 +10,6 @@ class RegisterService {
     required String email,
     required String username,
     required String password,
-    required String fullName,
-    required String age,
-    required String gender,
   }) async {
     try {
       final rekenings = await _dio.get(ApiRouteConfig.rekenings);
@@ -30,9 +27,9 @@ class RegisterService {
           'email': email,
           'username': username,
           'password': password,
-          'fullName': fullName,
-          'age': age,
-          'gender': gender,
+          'fullName': username,
+          'age': '01-01-2000',
+          'gender': 'unknown',
           'roleId': 2,
           'rekenings': [
             {'id': cash['id'], 'name': cash['name']},
