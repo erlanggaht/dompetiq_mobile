@@ -7,6 +7,7 @@ import 'package:flutter_application_1/feat/savings/savings_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
 import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
+import 'package:flutter_application_1/widgets/savings_transfer_sheet.dart';
 
 const _accent = Color(0xFF3B62FF);
 const _green = Color(0xFF16A34A);
@@ -359,6 +360,15 @@ class SavingsScreenState extends State<SavingsScreen> {
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
+          leading: const Icon(PhosphorIconsRegular.clockCounterClockwise),
+          title: const Text('History'),
+          onTap: () {
+            Navigator.pop(context);
+            _openHistory(goal);
+          },
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
           leading: const Icon(PhosphorIconsRegular.pencilSimple),
           title: const Text('Edit goal'),
           onTap: () {
@@ -513,99 +523,118 @@ class SavingsScreenState extends State<SavingsScreen> {
   }
 
   Future<void> _openTransfer(Map<String, dynamic> goal) async {
-    if (_accounts.isEmpty) {
-      _showMessage('No account with a card available');
-      return;
-    }
-    int? accountId = (_accounts.first['id'] as num).toInt();
-    final amount = TextEditingController();
-    bool saving = false;
-    final keys = AmountKeys(amount);
-    bool showKeypad = true;
+    final added = await showSavingsTransferSheet(
+      context: context,
+      goal: goal,
+      accounts: _accounts,
+      service: _service,
+    );
+    if (added) _changed();
+  }
 
-    await _sheet(
-      (context, setSheet) => [
-        Text(
-          'Add to ${goal['name']}',
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 18),
-        DropdownButtonFormField<int>(
-          initialValue: accountId,
-          decoration: const InputDecoration(
-            labelText: 'From account',
-            border: OutlineInputBorder(),
+  Future<void> _openHistory(Map<String, dynamic> goal) async {
+    final id = (goal['id'] as num?)?.toInt();
+    final name = goal['name'] as String? ?? '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: _service.activity(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text(_message(snapshot.error!)));
+              }
+              final items =
+                  (snapshot.data ?? []).where((item) {
+                    final goalId = item['savingsGoalId'] ?? item['goalId'];
+                    return goalId != null
+                        ? goalId == id
+                        : item['goalName'] == name;
+                  }).toList()..sort(
+                    (a, b) => (b['transactionDate'] as String? ?? '').compareTo(
+                      a['transactionDate'] as String? ?? '',
+                    ),
+                  );
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                    child: Text(
+                      'History · $name',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: items.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No activity yet',
+                              style: TextStyle(color: Color(0xFF667085)),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            itemCount: items.length,
+                            separatorBuilder: (_, _) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              final date = DateTime.tryParse(
+                                item['transactionDate'] as String? ?? '',
+                              )?.toLocal();
+                              final amount =
+                                  (item['amount'] as num?)?.toInt() ?? 0;
+                              final added = item['direction'] != 'IN';
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  added ? 'Added to goal' : 'Withdrawn',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: date == null
+                                    ? null
+                                    : Text(formatDateShort(date)),
+                                trailing: Text(
+                                  '${added ? '+' : '-'} ${formatRupiah(amount)}',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: added
+                                        ? _accent
+                                        : const Color(0xFFD92D20),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              );
+            },
           ),
-          items: [
-            for (final account in _accounts)
-              DropdownMenuItem<int>(
-                value: (account['id'] as num).toInt(),
-                child: Text(account['name'] as String),
-              ),
-          ],
-          onChanged: (value) => setSheet(() => accountId = value),
         ),
-        const SizedBox(height: 14),
-        AmountField(
-          controller: amount,
-          useInternalKeypad: false,
-          autofocus: true,
-          onTap: () => setSheet(() => showKeypad = true),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          height: 48,
-          child: FilledButton(
-            onPressed: saving
-                ? null
-                : () async {
-                    final value =
-                        int.tryParse(
-                          amount.text.replaceAll(RegExp(r'[^0-9]'), ''),
-                        ) ??
-                        0;
-                    if (value <= 0 || accountId == null) {
-                      _showMessage('Choose an account and enter an amount');
-                      return;
-                    }
-                    setSheet(() => saving = true);
-                    try {
-                      await _service.transfer(
-                        goalId: (goal['id'] as num).toInt(),
-                        rekeningUserId: accountId!,
-                        amount: value,
-                        date: DateTime.now(),
-                      );
-                      if (context.mounted) Navigator.pop(context);
-                      _changed();
-                    } catch (e) {
-                      setSheet(() => saving = false);
-                      _showMessage(_message(e));
-                    }
-                  },
-            style: FilledButton.styleFrom(backgroundColor: _accent),
-            child: Text(saving ? 'Saving...' : 'Add money'),
-          ),
-        ),
-      ],
-      bottom: (sheetContext, setSheet) => showKeypad
-          ? AmountKeypad(
-              fullWidth: true,
-              onDigit: (digit) {
-                keys.append(digit);
-                setSheet(() {});
-              },
-              onBackspace: () {
-                keys.backspace();
-                setSheet(() {});
-              },
-              onQuickAmount: (value) {
-                keys.set(value);
-                setSheet(() {});
-              },
-              onDone: () => setSheet(() => showKeypad = false),
-            )
-          : const SizedBox.shrink(),
+      ),
     );
   }
 

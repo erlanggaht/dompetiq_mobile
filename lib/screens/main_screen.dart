@@ -165,6 +165,9 @@ class _MainScreenState extends State<MainScreen> {
         onOpenNotifications: _openNotifications,
         onTransactionSaved: _reloadAll,
         onOpenTools: _openTools,
+        onOpenBudget: () => setState(() => _index = 2),
+        onOpenCards: () => setState(() => _index = 7),
+        onOpenSavings: () => setState(() => _index = 5),
         hasUnreadNotifications: _hasUnread,
         onServerError: (v) => _setServerError('home', v),
       ),
@@ -178,6 +181,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       BudgetScreen(
         key: _budgetKey,
+        onChanged: _reloadAll,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,
@@ -215,6 +219,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       CardsScreen(
         key: _cardsKey,
+        onChanged: _reloadAll,
         onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onOpenNotifications: _openNotifications,
         hasUnreadNotifications: _hasUnread,

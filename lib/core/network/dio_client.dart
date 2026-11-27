@@ -5,11 +5,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class DioClient {
   static const _baseUrl = String.fromEnvironment("API_URL");
   static const _sessionCookieName = '_Host-session';
+  static const _csrfCookieName = 'csrf_token';
 
   static final navigatorKey = GlobalKey<NavigatorState>();
 
   static final Map<String, String> _cookies = {};
   static String? _sessionCookie;
+  static String? _csrfToken;
   static bool _sessionLoaded = false;
   static bool _sessionValidated = false;
 
@@ -41,6 +43,9 @@ class DioClient {
                 options.headers['Cookie'] = _cookies.entries
                     .map((e) => '${e.key}=${e.value}')
                     .join('; ');
+              }
+              if (_csrfToken != null) {
+                options.headers['X-CSRF-Token'] = _csrfToken;
               }
               handler.next(options);
             },
@@ -102,12 +107,20 @@ class DioClient {
           _sessionCookie = null;
           _storage.delete(key: _sessionCookieName);
         }
+        if (name == _csrfCookieName) {
+          _csrfToken = null;
+          _storage.delete(key: _csrfCookieName);
+        }
         continue;
       }
       _cookies[name] = value;
       if (name == _sessionCookieName) {
         _sessionCookie = nameValue;
         _storage.write(key: _sessionCookieName, value: nameValue);
+      }
+      if (name == _csrfCookieName) {
+        _csrfToken = value;
+        _storage.write(key: _csrfCookieName, value: value);
       }
     }
   }
@@ -117,6 +130,7 @@ class DioClient {
   static Future<void> loadSession() async {
     _sessionValidated = false;
     _sessionCookie = await _storage.read(key: _sessionCookieName);
+    _csrfToken = await _storage.read(key: _csrfCookieName);
     _sessionLoaded = true;
     debugPrint('[session] load storedCookie=${_sessionCookie != null}');
     if (_sessionCookie == null) return;
@@ -133,7 +147,9 @@ class DioClient {
     _sessionCookie = null;
     _cookies.remove(_sessionCookieName);
     _cookies.remove('_tmpUser');
+    _csrfToken = null;
     await _storage.delete(key: _sessionCookieName);
+    await _storage.delete(key: _csrfCookieName);
   }
 
   static void markSessionValidated(bool valid) {

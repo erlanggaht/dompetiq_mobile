@@ -8,6 +8,7 @@ import 'package:flutter_application_1/widgets/card_visual.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
 
 class CardsScreen extends StatefulWidget {
+  final VoidCallback? onChanged;
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
   final bool hasUnreadNotifications;
@@ -16,6 +17,7 @@ class CardsScreen extends StatefulWidget {
 
   const CardsScreen({
     super.key,
+    this.onChanged,
     this.onOpenMenu,
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
@@ -141,6 +143,7 @@ class CardsScreenState extends State<CardsScreen> {
       );
       TransactionService.clearOptionsCache();
       await _load();
+      widget.onChanged?.call();
     } catch (e) {
       _message(e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -226,6 +229,7 @@ class CardsScreenState extends State<CardsScreen> {
                                         ),
                                       );
                                       _load();
+                                      widget.onChanged?.call();
                                     },
                                     child: Column(
                                       crossAxisAlignment:

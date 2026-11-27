@@ -33,6 +33,13 @@ class SavingsService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> activity() async {
+    return _run(() async {
+      final response = await _dio.get(ApiRouteConfig.savingsGoalActivity);
+      return (response.data['data'] as List).cast<Map<String, dynamic>>();
+    }, 'Failed to load savings activity');
+  }
+
   Future<void> save({
     int? id,
     required String name,

@@ -17,8 +17,11 @@ class BudgetScreen extends StatefulWidget {
   final bool showBottomNav;
   final ValueChanged<bool>? onServerError;
 
+  final VoidCallback? onChanged;
+
   const BudgetScreen({
     super.key,
+    this.onChanged,
     this.onOpenMenu,
     this.onOpenNotifications,
     this.hasUnreadNotifications = false,
@@ -393,6 +396,7 @@ class BudgetScreenState extends State<BudgetScreen> {
                                         Navigator.pop(sheetContext);
                                       }
                                       await _load(showLoading: false);
+                                      widget.onChanged?.call();
                                     } catch (e) {
                                       if (sheetContext.mounted) {
                                         Navigator.pop(sheetContext);
@@ -477,6 +481,7 @@ class BudgetScreenState extends State<BudgetScreen> {
     try {
       await _service.deleteItem(item.id);
       await _load(showLoading: false);
+      widget.onChanged?.call();
     } catch (e) {
       _showMessage(e.toString().replaceFirst('Exception: ', ''));
     }

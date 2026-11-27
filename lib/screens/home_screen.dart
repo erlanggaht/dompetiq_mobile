@@ -17,6 +17,7 @@ import 'package:flutter_application_1/widgets/home_action_card.dart';
 import 'package:flutter_application_1/widgets/home_header.dart';
 import 'package:flutter_application_1/widgets/home_progress_section.dart';
 import 'package:flutter_application_1/widgets/home_transaction_section.dart';
+import 'package:flutter_application_1/widgets/savings_transfer_sheet.dart';
 
 const _wib = Duration(hours: 7);
 
@@ -25,6 +26,9 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onTransactionSaved;
   final VoidCallback? onOpenTools;
+  final VoidCallback? onOpenBudget;
+  final VoidCallback? onOpenCards;
+  final VoidCallback? onOpenSavings;
   final bool hasUnreadNotifications;
   final ValueChanged<bool>? onServerError;
 
@@ -34,6 +38,9 @@ class HomeScreen extends StatefulWidget {
     this.onOpenNotifications,
     this.onTransactionSaved,
     this.onOpenTools,
+    this.onOpenBudget,
+    this.onOpenCards,
+    this.onOpenSavings,
     this.hasUnreadNotifications = false,
     this.onServerError,
   });
@@ -50,6 +57,7 @@ class HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _budgets = [];
   List<Map<String, dynamic>> _cards = [];
   List<Map<String, dynamic>> _savings = [];
+  List<Map<String, dynamic>> _savingsAccounts = [];
   bool _isLoading = true;
   bool _hasLoaded = false;
   int _loadSeq = 0;
@@ -158,11 +166,26 @@ class HomeScreenState extends State<HomeScreen> {
     try {
       final data = await SavingsService().load();
       final goals = (data['goals'] as List? ?? []).cast<Map<String, dynamic>>();
+      final accounts = (data['accounts'] as List? ?? [])
+          .cast<Map<String, dynamic>>();
       if (!mounted) return;
-      setState(() => _savings = goals);
+      setState(() {
+        _savings = goals;
+        _savingsAccounts = accounts;
+      });
     } catch (_) {
       return;
     }
+  }
+
+  Future<void> _addSavingsMoney(Map<String, dynamic> goal) async {
+    final added = await showSavingsTransferSheet(
+      context: context,
+      goal: goal,
+      accounts: _savingsAccounts,
+      service: SavingsService(),
+    );
+    if (added) reload();
   }
 
   Future<void> _openTransactionForm(String type) async {
@@ -326,7 +349,7 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F9),
       body: RefreshIndicator(
-        onRefresh: _loadData,
+        onRefresh: reload,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
@@ -355,6 +378,10 @@ class HomeScreenState extends State<HomeScreen> {
                       budgets: _budgets,
                       cards: _cards,
                       savings: _savings,
+                      onOpenBudget: widget.onOpenBudget,
+                      onOpenCards: widget.onOpenCards,
+                      onOpenSavings: widget.onOpenSavings,
+                      onAddSavings: _addSavingsMoney,
                     ),
                     const SizedBox(height: 28),
                     HomeTransactionSection(

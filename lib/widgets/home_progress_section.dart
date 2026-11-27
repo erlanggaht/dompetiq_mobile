@@ -17,12 +17,20 @@ class HomeProgressSection extends StatefulWidget {
   final List<Map<String, dynamic>> budgets;
   final List<Map<String, dynamic>> cards;
   final List<Map<String, dynamic>> savings;
+  final VoidCallback? onOpenBudget;
+  final VoidCallback? onOpenCards;
+  final VoidCallback? onOpenSavings;
+  final ValueChanged<Map<String, dynamic>>? onAddSavings;
 
   const HomeProgressSection({
     super.key,
     required this.budgets,
     required this.cards,
     required this.savings,
+    this.onOpenBudget,
+    this.onOpenCards,
+    this.onOpenSavings,
+    this.onAddSavings,
   });
 
   @override
@@ -124,7 +132,8 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
     return _twoColumnPager(
       items: items,
       height: 178,
-      cardBuilder: (item) => _BudgetProgressCard(item: item),
+      cardBuilder: (item) =>
+          _BudgetProgressCard(item: item, onTap: widget.onOpenBudget),
     );
   }
 
@@ -141,7 +150,8 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
     return _twoColumnPager(
       items: cards,
       height: 140,
-      cardBuilder: (card) => _AccountProgressCard(card: card),
+      cardBuilder: (card) =>
+          _AccountProgressCard(card: card, onTap: widget.onOpenCards),
     );
   }
 
@@ -158,7 +168,13 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
     return _twoColumnPager(
       items: goals,
       height: 178,
-      cardBuilder: (goal) => _SavingsProgressCard(goal: goal),
+      cardBuilder: (goal) => _SavingsProgressCard(
+        goal: goal,
+        onTap: widget.onOpenSavings,
+        onAdd: widget.onAddSavings == null
+            ? null
+            : () => widget.onAddSavings!(goal),
+      ),
     );
   }
 
@@ -241,18 +257,26 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
 
 class _BudgetProgressCard extends StatelessWidget {
   final BudgetItem item;
+  final VoidCallback? onTap;
 
-  const _BudgetProgressCard({required this.item});
+  const _BudgetProgressCard({required this.item, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final ratio = item.allocated == 0
         ? 0.0
         : (item.spent / item.allocated).clamp(0.0, 1.0);
+    final over = item.remaining < 0;
+    final accent = over
+        ? const Color(0xFFDC2626)
+        : ratio >= 0.8
+        ? const Color(0xFFF59E0B)
+        : _accent;
     final icon =
         categoryStyle(item.categoryName)?.$1 ?? PhosphorIconsFill.chartPie;
 
     return _cardShell(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -284,18 +308,20 @@ class _BudgetProgressCard extends StatelessWidget {
               value: ratio,
               minHeight: 6,
               backgroundColor: const Color(0xFFEFF1F5),
-              color: _accent,
+              color: accent,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            '${(ratio * 100).round()}% of budget',
+            over
+                ? '${(ratio * 100).round()}% of budget · Over'
+                : '${(ratio * 100).round()}% of budget',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: _accent,
+              color: accent,
             ),
           ),
         ],
@@ -306,12 +332,14 @@ class _BudgetProgressCard extends StatelessWidget {
 
 class _AccountProgressCard extends StatelessWidget {
   final Map<String, dynamic> card;
+  final VoidCallback? onTap;
 
-  const _AccountProgressCard({required this.card});
+  const _AccountProgressCard({required this.card, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return _cardShell(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -348,8 +376,10 @@ class _AccountProgressCard extends StatelessWidget {
 
 class _SavingsProgressCard extends StatelessWidget {
   final Map<String, dynamic> goal;
+  final VoidCallback? onTap;
+  final VoidCallback? onAdd;
 
-  const _SavingsProgressCard({required this.goal});
+  const _SavingsProgressCard({required this.goal, this.onTap, this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -358,6 +388,7 @@ class _SavingsProgressCard extends StatelessWidget {
     final ratio = target == 0 ? 0.0 : (saved / target).clamp(0.0, 1.0);
 
     return _cardShell(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -385,7 +416,29 @@ class _SavingsProgressCard extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          _AmountText(saved),
+          Row(
+            children: [
+              Expanded(child: _AmountText(saved)),
+              if (onAdd != null)
+                GestureDetector(
+                  onTap: onAdd,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      PhosphorIconsRegular.plus,
+                      size: 16,
+                      color: _accent,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
@@ -436,18 +489,26 @@ class _AmountText extends StatelessWidget {
   }
 }
 
-Widget _cardShell({required Widget child}) => Container(
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.05),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-  child: child,
-);
+Widget _cardShell({required Widget child, VoidCallback? onTap}) {
+  final card = Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.05),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: child,
+  );
+  if (onTap == null) return card;
+  return GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: card,
+  );
+}
