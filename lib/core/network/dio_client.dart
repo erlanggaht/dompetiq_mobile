@@ -20,6 +20,7 @@ class DioClient {
     '/auth/create-account',
     '/auth/reset-password/send',
     '/auth/reset-pin/send',
+    '/auth/csrf-token',
   ];
 
   static final Dio _dio =
@@ -58,7 +59,7 @@ class DioClient {
               _captureSession(response);
               handler.next(response);
             },
-            onError: (error, handler) {
+            onError: (error, handler) async {
               debugPrint(
                 '[session] error ${error.requestOptions.uri.path} '
                 'status=${error.response?.statusCode} '
@@ -66,6 +67,25 @@ class DioClient {
               );
               if (error.response != null) {
                 _captureSession(error.response!);
+              }
+              final codeError = error.response?.data?['error']?['codeError'];
+              if (error.response?.statusCode == 403 &&
+                  codeError == 'CSRF_INVALID' &&
+                  error.requestOptions.extra['csrfRetried'] != true) {
+                try {
+                  final tokenResponse = await _dio.get('/auth/csrf-token');
+                  final token = tokenResponse.data['data']?['token'] as String?;
+                  if (token != null) {
+                    _csrfToken = token;
+                    _cookies[_csrfCookieName] = token;
+                    await _storage.write(key: _csrfCookieName, value: token);
+                  }
+                  error.requestOptions.extra['csrfRetried'] = true;
+                  final response = await _dio.fetch(error.requestOptions);
+                  return handler.resolve(response);
+                } catch (_) {
+                  return handler.next(error);
+                }
               }
               final isAuthRequest = _authEndpoints.any(
                 (endpoint) => error.requestOptions.uri.path.contains(endpoint),
@@ -133,6 +153,7 @@ class DioClient {
     _csrfToken = await _storage.read(key: _csrfCookieName);
     _sessionLoaded = true;
     debugPrint('[session] load storedCookie=${_sessionCookie != null}');
+    if (_csrfToken != null) _cookies[_csrfCookieName] = _csrfToken!;
     if (_sessionCookie == null) return;
     final separator = _sessionCookie!.indexOf('=');
     if (separator > 0) {

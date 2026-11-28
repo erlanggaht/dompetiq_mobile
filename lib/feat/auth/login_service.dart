@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_application_1/core/biometric_lock.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
 import 'package:flutter_application_1/core/cache_manager.dart';
@@ -54,6 +55,7 @@ class AuthService {
     } finally {
       UserService.clear();
       TransactionService.clearOptionsCache();
+      await BiometricLock.setEnabled(false);
       await CacheManager.clearAll();
       await DioClient.clearSession();
     }

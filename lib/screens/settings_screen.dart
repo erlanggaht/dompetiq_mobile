@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:flutter_application_1/core/biometric_lock.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/feat/app_version/app_version_service.dart';
 import 'package:flutter_application_1/feat/settings/delete_account_service.dart';
@@ -26,11 +27,51 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   String _currentVersion = '';
   bool _checkingUpdate = false;
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
+  bool _biometricBusy = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _loadBiometric();
+  }
+
+  Future<void> _loadBiometric() async {
+    final available = await BiometricLock.isAvailable();
+    if (!mounted) return;
+    setState(() => _biometricAvailable = available);
+    if (!available) return;
+    final enabled = await BiometricLock.load();
+    if (!mounted) return;
+    setState(() => _biometricEnabled = enabled);
+  }
+
+  Future<void> _toggleBiometric(bool value) async {
+    if (_biometricBusy) return;
+    setState(() => _biometricBusy = true);
+    try {
+      if (value) {
+        final confirmed = await BiometricLock.authenticate(
+          reason: 'Enable biometric lock',
+        );
+        if (!confirmed) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Biometric authentication cancelled'),
+              ),
+            );
+          }
+          return;
+        }
+      }
+      await BiometricLock.setEnabled(value);
+      if (mounted) setState(() => _biometricEnabled = value);
+    } finally {
+      if (mounted) setState(() => _biometricBusy = false);
+    }
   }
 
   Future<void> _loadVersion() async {
@@ -249,6 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await DeleteAccountService().delete();
       UserService.clear();
+      await BiometricLock.setEnabled(false);
       await DioClient.clearSession();
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -279,6 +321,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 18, 24, 40),
                 children: [
                   const _SettingsSectionTitle('Security'),
+                  _SettingsSwitchTile(
+                    icon: PhosphorIconsRegular.fingerprint,
+                    title: 'Biometric lock',
+                    subtitle: _biometricAvailable
+                        ? 'Unlock with fingerprint, face, or device PIN'
+                        : 'Not available on this device',
+                    value: _biometricEnabled,
+                    onChanged: _biometricAvailable && !_biometricBusy
+                        ? _toggleBiometric
+                        : null,
+                  ),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.lock,
                     title: 'Change Password',
@@ -299,6 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
+
                   const _SettingsSectionTitle('Notifications'),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.bell,
@@ -366,6 +420,55 @@ class _SettingsSectionTitle extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+class _SettingsSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  const _SettingsSwitchTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: Icon(icon, color: const Color(0xFF101828)),
+          title: Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF101828),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          subtitle: subtitle == null
+              ? null
+              : Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    color: Color(0xFF667085),
+                    fontSize: 13,
+                  ),
+                ),
+          value: value,
+          activeTrackColor: const Color(0xFF3B62FF),
+          onChanged: onChanged,
+        ),
+        const Divider(color: Color(0xFFE4E7EC), height: 1),
+      ],
     );
   }
 }
