@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class CardVisual extends StatelessWidget {
   final String name;
@@ -22,16 +23,15 @@ class CardVisual extends StatelessWidget {
     this.compact = false,
   });
 
-  static const _gradients = [
-    [Color(0xFF3B62FF), Color(0xFF9B51E0)],
-    [Color(0xFFFF6B8B), Color(0xFFFF9A6B)],
-    [Color(0xFF11998E), Color(0xFF38EF7D)],
-    [Color(0xFF232526), Color(0xFF414345)],
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final colors = _gradients[index % _gradients.length];
+    final appColors = context.appColors;
+    final colors = [
+      [appColors.accent, appColors.ink],
+      [appColors.accent, appColors.grey],
+      [appColors.green, appColors.accent],
+      [appColors.ink, appColors.grey],
+    ][index % 4];
     if (compact) {
       return Row(
         children: [
@@ -61,10 +61,7 @@ class CardVisual extends StatelessWidget {
                     onTap: BalanceVisibility.toggle,
                     child: Text(
                       '•••• $last4 · ${visible ? formatRupiah(saldo) : '••••••'}',
-                      style: const TextStyle(
-                        color: Color(0xFF667085),
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: appColors.grey, fontSize: 12),
                     ),
                   ),
                 ),
@@ -72,9 +69,9 @@ class CardVisual extends StatelessWidget {
             ),
           ),
           if (!isActive)
-            const Text(
+            Text(
               'Inactive',
-              style: TextStyle(color: Color(0xFF98A2B3), fontSize: 11),
+              style: TextStyle(color: appColors.grey, fontSize: 11),
             ),
         ],
       );

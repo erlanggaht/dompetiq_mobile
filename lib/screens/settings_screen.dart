@@ -4,7 +4,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_application_1/core/biometric_lock.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
+import 'package:flutter_application_1/core/theme_mode_store.dart';
 import 'package:flutter_application_1/feat/app_version/app_version_service.dart';
 import 'package:flutter_application_1/feat/settings/delete_account_service.dart';
 import 'package:flutter_application_1/feat/settings/reset_data_service.dart';
@@ -187,7 +189,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFD92D20),
+                  backgroundColor: context.appColors.danger,
                 ),
                 onPressed: canConfirm
                     ? () => Navigator.pop(context, true)
@@ -265,7 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFD92D20),
+                  backgroundColor: context.appColors.danger,
                 ),
                 onPressed: canConfirm
                     ? () => Navigator.pop(context, true)
@@ -310,8 +312,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeStore = ThemeModeStore.active;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -352,13 +355,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
+                  const _SettingsSectionTitle('Appearance'),
+                  _ThemeModeSelector(store: themeStore),
 
-                  const _SettingsSectionTitle('Notifications'),
-                  _SettingsTile(
-                    icon: PhosphorIconsRegular.bell,
-                    title: 'Notifications',
-                    onTap: () => _comingSoon(context, 'Notifications'),
-                  ),
                   const _SettingsSectionTitle('Data & Privacy'),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.trash,
@@ -414,14 +413,60 @@ class _SettingsSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(top: 18, bottom: 6),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Color(0xFF667085),
+        style: TextStyle(
+          color: context.appColors.grey,
           fontSize: 13,
           fontWeight: FontWeight.w700,
         ),
       ),
     );
   }
+}
+
+class _ThemeModeSelector extends StatelessWidget {
+  final ThemeModeStore? store;
+
+  const _ThemeModeSelector({required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = store?.mode ?? ThemeMode.system;
+    return _SettingsTile(
+      icon: PhosphorIconsRegular.palette,
+      title: 'Appearance',
+      subtitle: _modeLabel(mode),
+      onTap: store == null
+          ? null
+          : () async {
+              final selected = await showDialog<ThemeMode>(
+                context: context,
+                builder: (context) => SimpleDialog(
+                  title: const Text('Appearance'),
+                  children: [
+                    for (final option in ThemeMode.values)
+                      ListTile(
+                        title: Text(_modeLabel(option)),
+                        trailing: option == mode
+                            ? Icon(
+                                PhosphorIconsRegular.check,
+                                color: context.appColors.accent,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(context, option),
+                      ),
+                  ],
+                ),
+              );
+              if (selected != null) await store!.setMode(selected);
+            },
+    );
+  }
+
+  String _modeLabel(ThemeMode mode) => switch (mode) {
+    ThemeMode.system => 'System',
+    ThemeMode.light => 'Light',
+    ThemeMode.dark => 'Dark',
+  };
 }
 
 class _SettingsSwitchTile extends StatelessWidget {
@@ -441,33 +486,24 @@ class _SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Column(
       children: [
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          secondary: Icon(icon, color: const Color(0xFF101828)),
+          secondary: Icon(icon, color: colors.ink),
           title: Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF101828),
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
           subtitle: subtitle == null
               ? null
-              : Text(
-                  subtitle!,
-                  style: const TextStyle(
-                    color: Color(0xFF667085),
-                    fontSize: 13,
-                  ),
-                ),
+              : Text(subtitle!, style: const TextStyle(fontSize: 13)),
           value: value,
-          activeTrackColor: const Color(0xFF3B62FF),
+          activeTrackColor: colors.accent,
           onChanged: onChanged,
         ),
-        const Divider(color: Color(0xFFE4E7EC), height: 1),
+        Divider(color: colors.border, height: 1),
       ],
     );
   }
@@ -492,7 +528,8 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? const Color(0xFFD92D20) : const Color(0xFF101828);
+    final colors = context.appColors;
+    final color = danger ? colors.danger : colors.ink;
     return Column(
       children: [
         ListTile(
@@ -509,18 +546,12 @@ class _SettingsTile extends StatelessWidget {
           ),
           subtitle: subtitle == null
               ? null
-              : Text(
-                  subtitle!,
-                  style: const TextStyle(
-                    color: Color(0xFF667085),
-                    fontSize: 13,
-                  ),
-                ),
+              : Text(subtitle!, style: const TextStyle(fontSize: 13)),
           trailing:
               trailing ?? Icon(PhosphorIconsRegular.caretRight, color: color),
           onTap: onTap,
         ),
-        const Divider(color: Color(0xFFE4E7EC), height: 1),
+        Divider(color: colors.border, height: 1),
       ],
     );
   }

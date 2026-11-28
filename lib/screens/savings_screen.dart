@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/savings/savings_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
 import 'package:flutter_application_1/widgets/app_section_header.dart';
 import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 import 'package:flutter_application_1/widgets/savings_transfer_sheet.dart';
-
-const _accent = Color(0xFF3B62FF);
-const _green = Color(0xFF16A34A);
 
 class SavingsScreen extends StatefulWidget {
   final VoidCallback? onChanged;
@@ -100,8 +98,9 @@ class SavingsScreenState extends State<SavingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -131,9 +130,9 @@ class SavingsScreenState extends State<SavingsScreen> {
                   icon: const Icon(PhosphorIconsRegular.plus, size: 16),
                   label: const Text('Add goal'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: _accent,
-                    foregroundColor: Colors.white,
-                    shadowColor: _accent.withValues(alpha: 0.3),
+                    backgroundColor: colors.accent,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shadowColor: colors.accent.withValues(alpha: 0.3),
                     elevation: 5,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     minimumSize: const Size(0, 40),
@@ -173,11 +172,11 @@ class SavingsScreenState extends State<SavingsScreen> {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(
               PhosphorIconsRegular.piggyBank,
               size: 44,
-              color: Color(0xFFB9BDD0),
+              color: context.appColors.grey,
             ),
             SizedBox(height: 12),
             Text(
@@ -187,7 +186,7 @@ class SavingsScreenState extends State<SavingsScreen> {
             SizedBox(height: 6),
             Text(
               'Tap + to create a target',
-              style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+              style: TextStyle(fontSize: 13, color: context.appColors.grey),
             ),
           ],
         ),
@@ -205,6 +204,7 @@ class SavingsScreenState extends State<SavingsScreen> {
   }
 
   Widget _goalCard(Map<String, dynamic> goal) {
+    final colors = context.appColors;
     final target = (goal['target'] as num?)?.toInt() ?? 0;
     final saved = (goal['saved'] as num?)?.toInt() ?? 0;
     final ratio = target == 0 ? 0.0 : (saved / target).clamp(0.0, 1.0);
@@ -219,11 +219,13 @@ class SavingsScreenState extends State<SavingsScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? colors.border
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
+              color: colors.ink.withValues(alpha: 0.05),
               blurRadius: 12,
               offset: Offset(0, 4),
             ),
@@ -237,19 +239,16 @@ class SavingsScreenState extends State<SavingsScreen> {
                 Expanded(
                   child: Text(
                     goal['name'] as String? ?? '',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                   ),
                 ),
                 if (reached)
-                  const Text(
+                  Text(
                     'Reached',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: _green,
+                      color: colors.green,
                     ),
                   ),
               ],
@@ -260,8 +259,8 @@ class SavingsScreenState extends State<SavingsScreen> {
               child: LinearProgressIndicator(
                 value: ratio,
                 minHeight: 8,
-                backgroundColor: const Color(0xFFEDEEF3),
-                color: reached ? _green : _accent,
+                backgroundColor: colors.border,
+                color: reached ? colors.green : colors.accent,
               ),
             ),
             const SizedBox(height: 8),
@@ -270,17 +269,11 @@ class SavingsScreenState extends State<SavingsScreen> {
               children: [
                 Text(
                   formatRupiah(saved),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 Text(
                   'of ${formatRupiah(target)}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF667085),
-                  ),
+                  style: TextStyle(fontSize: 12, color: colors.grey),
                 ),
               ],
             ),
@@ -288,7 +281,7 @@ class SavingsScreenState extends State<SavingsScreen> {
               const SizedBox(height: 6),
               Text(
                 'Deadline ${formatDateShort(deadline)}',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF98A2B3)),
+                style: TextStyle(fontSize: 11, color: colors.grey),
               ),
             ],
           ],
@@ -307,7 +300,7 @@ class SavingsScreenState extends State<SavingsScreen> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -351,7 +344,10 @@ class SavingsScreenState extends State<SavingsScreen> {
         const SizedBox(height: 8),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(PhosphorIconsRegular.plusCircle, color: _accent),
+          leading: Icon(
+            PhosphorIconsRegular.plusCircle,
+            color: context.appColors.accent,
+          ),
           title: const Text('Add money'),
           onTap: () {
             Navigator.pop(context);
@@ -378,13 +374,13 @@ class SavingsScreenState extends State<SavingsScreen> {
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(
+          leading: Icon(
             PhosphorIconsRegular.trash,
-            color: Color(0xFFD92D20),
+            color: context.appColors.danger,
           ),
-          title: const Text(
+          title: Text(
             'Delete goal',
-            style: TextStyle(color: Color(0xFFD92D20)),
+            style: TextStyle(color: context.appColors.danger),
           ),
           onTap: () {
             Navigator.pop(context);
@@ -496,7 +492,9 @@ class SavingsScreenState extends State<SavingsScreen> {
                       _showMessage(_message(e));
                     }
                   },
-            style: FilledButton.styleFrom(backgroundColor: _accent),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.appColors.accent,
+            ),
             child: Text(saving ? 'Saving...' : 'Save'),
           ),
         ),
@@ -539,7 +537,7 @@ class SavingsScreenState extends State<SavingsScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -584,10 +582,10 @@ class SavingsScreenState extends State<SavingsScreen> {
                   ),
                   Expanded(
                     child: items.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
                               'No activity yet',
-                              style: TextStyle(color: Color(0xFF667085)),
+                              style: TextStyle(color: context.appColors.grey),
                             ),
                           )
                         : ListView.separated(
@@ -621,8 +619,8 @@ class SavingsScreenState extends State<SavingsScreen> {
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: added
-                                        ? _accent
-                                        : const Color(0xFFD92D20),
+                                        ? context.appColors.accent
+                                        : context.appColors.danger,
                                   ),
                                 ),
                               );
@@ -651,7 +649,7 @@ class SavingsScreenState extends State<SavingsScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFD92D20),
+              backgroundColor: context.appColors.danger,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdateScreen extends StatelessWidget {
@@ -29,10 +31,11 @@ class AppUpdateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -43,22 +46,22 @@ class AppUpdateScreen extends StatelessWidget {
                   Container(
                     width: 96,
                     height: 96,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEEF2FF),
+                    decoration: BoxDecoration(
+                      color: colors.accent.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       PhosphorIconsRegular.downloadSimple,
                       size: 44,
-                      color: Color(0xFF3B62FF),
+                      color: colors.accent,
                     ),
                   ),
                   const SizedBox(height: 28),
-                  const Text(
+                  Text(
                     'Update available',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF101828),
+                      color: colors.ink,
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                     ),
@@ -67,8 +70,8 @@ class AppUpdateScreen extends StatelessWidget {
                   Text(
                     'A new version of DompetIQ ($latestVersion) is available. You are currently using version $currentVersion. Please update to continue.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF667085),
+                    style: TextStyle(
+                      color: colors.grey,
                       fontSize: 14,
                       height: 1.5,
                     ),
@@ -80,14 +83,16 @@ class AppUpdateScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? colors.border
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFEAECF0)),
+                        border: Border.all(color: colors.border),
                       ),
                       child: Text(
                         releaseNotes!,
-                        style: const TextStyle(
-                          color: Color(0xFF344054),
+                        style: TextStyle(
+                          color: colors.grey,
                           fontSize: 13,
                           height: 1.5,
                         ),
@@ -101,8 +106,10 @@ class AppUpdateScreen extends StatelessWidget {
                     child: FilledButton(
                       onPressed: () => _openUpdate(context),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B62FF),
-                        foregroundColor: Colors.white,
+                        backgroundColor: colors.accent,
+                        foregroundColor: Theme.of(context)
+                            .colorScheme
+                            .onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),

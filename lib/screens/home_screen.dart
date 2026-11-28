@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
@@ -326,19 +327,19 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF2F4F9),
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF2F4F9),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: TextStyle(color: context.appColors.danger)),
               const SizedBox(height: 16),
               ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
             ],
@@ -347,7 +348,7 @@ class HomeScreenState extends State<HomeScreen> {
       );
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F9),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: RefreshIndicator(
         onRefresh: reload,
         child: SingleChildScrollView(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/screens/device_limit_screen.dart';
 import 'package:flutter_application_1/screens/pin_verification_screen.dart';
 import 'package:flutter_application_1/widgets/app_submit_button.dart';
@@ -86,26 +87,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Welcome',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
-                  color: Color(0xFF1C1C1C),
+                  color: colors.ink,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Sign In to continue',
-                style: TextStyle(fontSize: 18, color: Color(0xFF1C1C1C)),
+                style: TextStyle(fontSize: 18, color: colors.ink),
               ),
               const SizedBox(height: 26),
               AppTextField(
@@ -130,11 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
               GestureDetector(
                 onTap: () =>
                     Navigator.pushNamed(context, '/auth/forgot-password'),
-                child: const Text(
+                child: Text(
                   'Forgot Password?',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF3B62FF),
+                    color: colors.accent,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -142,11 +144,11 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/auth/register'),
-                child: const Text(
+                child: Text(
                   "Don't have an account? Sign Up",
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF3B62FF),
+                    color: colors.accent,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

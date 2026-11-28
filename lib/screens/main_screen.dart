@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/network/server_error.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/app_version/app_version_service.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/app_update_screen.dart';
@@ -259,8 +260,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildServerError() {
+    final colors = context.appColors;
     return ColoredBox(
-      color: const Color(0xFFF8FAFC),
+      color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         child: Center(
           child: Padding(
@@ -271,32 +273,32 @@ class _MainScreenState extends State<MainScreen> {
                 Container(
                   width: 96,
                   height: 96,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEEF2FF),
+                  decoration: BoxDecoration(
+                    color: colors.accent.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.warningCircle,
                     size: 44,
-                    color: Color(0xFF3B62FF),
+                    color: colors.accent,
                   ),
                 ),
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   "Can't reach the server",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF101828),
+                    color: colors.ink,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   "We couldn't connect right now. This may be caused by your internet connection or a temporary server issue. Please try again.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF667085),
+                    color: colors.grey,
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -308,9 +310,11 @@ class _MainScreenState extends State<MainScreen> {
                   child: FilledButton(
                     onPressed: _reloadingAll ? null : _reloadAll,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B62FF),
+                      backgroundColor: colors.accent,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFB8C7FF),
+                      disabledBackgroundColor: colors.accent.withValues(
+                        alpha: 0.45,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -346,7 +350,7 @@ class _MainScreenState extends State<MainScreen> {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
@@ -411,6 +415,7 @@ class _NavSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -429,16 +434,14 @@ class _NavSlot extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: active
-                    ? const Color(0xFF3B62FF).withValues(alpha: 0.10)
+                    ? colors.accent.withValues(alpha: 0.10)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Icon(
                 icon,
                 size: 26,
-                color: active
-                    ? const Color(0xFF3B62FF)
-                    : const Color(0xFF9AA0AC),
+                color: active ? colors.accent : colors.grey,
               ),
             ),
           ),
@@ -455,13 +458,14 @@ class _AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Expanded(
       child: Center(
         heightFactor: 1,
         child: Material(
-          color: const Color(0xFF3B62FF),
+          color: colors.accent,
           elevation: 6,
-          shadowColor: const Color(0xFF3B62FF).withValues(alpha: 0.4),
+          shadowColor: colors.accent.withValues(alpha: 0.4),
           shape: const CircleBorder(),
           child: InkWell(
             onTap: onTap,

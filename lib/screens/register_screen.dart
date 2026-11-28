@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/feat/auth/register_service.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/widgets/app_password_field.dart';
 import 'package:flutter_application_1/widgets/app_text_field.dart';
@@ -89,19 +90,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(30.0),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'Create Account',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
-                  color: Color(0xFF1C1C1C),
+                  color: colors.ink,
                 ),
               ),
               const SizedBox(height: 26),
@@ -135,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
+                    backgroundColor: colors.accent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -165,9 +167,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
                 ),
-                child: const Text(
+                child: Text(
                   'Already have an account? Sign In',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF87879D)),
+                  style: TextStyle(fontSize: 14, color: colors.grey),
                 ),
               ),
             ],

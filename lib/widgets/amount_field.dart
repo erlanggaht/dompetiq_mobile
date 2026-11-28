@@ -4,10 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
-const _accent = Color(0xFF3B62FF);
-const _ink = Color(0xFF111827);
-const _muted = Color(0xFF8A90A2);
 const _maxAmount = 2147483647;
 
 class AmountKeys {
@@ -114,23 +112,23 @@ class _AmountFieldState extends State<AmountField> {
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: _muted,
+            color: context.appColors.grey,
             letterSpacing: 0.2,
           ),
         ),
         const SizedBox(height: 4),
         Row(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 8, top: 6),
               child: Text(
                 'Rp',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: _muted,
+                  color: context.appColors.grey,
                 ),
               ),
             ),
@@ -145,20 +143,24 @@ class _AmountFieldState extends State<AmountField> {
                     ? TextInputType.number
                     : TextInputType.none,
                 inputFormatters: [ThousandsFormatter()],
-                cursorColor: _accent,
+                cursorColor: context.appColors.accent,
                 onTap: kIsWeb
                     ? null
                     : widget.onTap ?? () => setState(() => _showKeypad = true),
                 onChanged: (_) => widget.onChanged?.call(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
-                  color: _ink,
+                  color: context.appColors.ink,
                   letterSpacing: -0.6,
                   height: 1.2,
                 ),
                 decoration: const InputDecoration(
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -216,10 +218,10 @@ class AmountKeypad extends StatelessWidget {
           spacing: 6,
           runSpacing: 6,
           children: [
-            _quickButton(50000),
-            _quickButton(100000),
-            _quickButton(500000),
-            _quickButton(1000000),
+            _quickButton(context, 50000),
+            _quickButton(context, 100000),
+            _quickButton(context, 500000),
+            _quickButton(context, 1000000),
           ],
         ),
         const SizedBox(height: 10),
@@ -232,10 +234,21 @@ class AmountKeypad extends StatelessWidget {
           crossAxisSpacing: 6,
           children: [
             for (final digit in ['1', '2', '3', '4', '5', '6', '7', '8', '9'])
-              _key(digit, () => onDigit(digit)),
-            _key(null, onBackspace, icon: PhosphorIconsRegular.backspace),
-            _key('0', () => onDigit('0')),
-            _key(null, onDone, icon: PhosphorIconsBold.check, color: _accent),
+              _key(context, digit, () => onDigit(digit)),
+            _key(
+              context,
+              null,
+              onBackspace,
+              icon: PhosphorIconsRegular.backspace,
+            ),
+            _key(context, '0', () => onDigit('0')),
+            _key(
+              context,
+              null,
+              onDone,
+              icon: PhosphorIconsBold.check,
+              color: context.appColors.accent,
+            ),
           ],
         ),
       ],
@@ -246,9 +259,9 @@ class AmountKeypad extends StatelessWidget {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
-          decoration: const BoxDecoration(
-            color: Color(0xFFF2F4F8),
-            border: Border(top: BorderSide(color: Color(0xFFE4E7EC))),
+          decoration: BoxDecoration(
+            color: context.appColors.border.withValues(alpha: 0.45),
+            border: Border(top: BorderSide(color: context.appColors.border)),
           ),
           child: keys,
         ),
@@ -257,29 +270,29 @@ class AmountKeypad extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F8),
+        color: context.appColors.border.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE4E7EC)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: keys,
     );
   }
 
-  Widget _quickButton(int amount) {
+  Widget _quickButton(BuildContext context, int amount) {
     return InkWell(
       onTap: () => onQuickAmount(amount),
       borderRadius: BorderRadius.circular(9),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: const Color(0xFFE4E7EC)),
+          border: Border.all(color: context.appColors.border),
         ),
         child: Text(
           'Rp ${formatThousands(amount)}',
-          style: const TextStyle(
-            color: _muted,
+          style: TextStyle(
+            color: context.appColors.grey,
             fontSize: 11,
             fontWeight: FontWeight.w700,
           ),
@@ -289,13 +302,15 @@ class AmountKeypad extends StatelessWidget {
   }
 
   Widget _key(
+    BuildContext context,
     String? label,
     VoidCallback onTap, {
     IconData? icon,
-    Color color = _ink,
+    Color? color,
   }) {
+    final keyColor = color ?? context.appColors.ink;
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
@@ -305,12 +320,12 @@ class AmountKeypad extends StatelessWidget {
               ? Text(
                   label!,
                   style: TextStyle(
-                    color: color,
+                    color: keyColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
                 )
-              : Icon(icon, color: color, size: 20),
+              : Icon(icon, color: keyColor, size: 20),
         ),
       ),
     );

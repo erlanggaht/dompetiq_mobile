@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/biometric_lock.dart';
-
-const _accent = Color(0xFF3B62FF);
+import 'package:flutter_application_1/core/app_theme.dart';
 
 /// Locks the wrapped app while biometric unlock is enabled.
 class BiometricGate extends StatefulWidget {
@@ -83,7 +82,7 @@ class _BiometricGateState extends State<BiometricGate>
   @override
   Widget build(BuildContext context) {
     if (_checking) {
-      return const ColoredBox(color: Color(0xFFF2F4F9));
+      return ColoredBox(color: Theme.of(context).colorScheme.surface);
     }
     return Stack(
       children: [
@@ -101,8 +100,9 @@ class _LockOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Material(
-      color: const Color(0xFFF2F4F9),
+      color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         child: Center(
           child: Padding(
@@ -113,33 +113,33 @@ class _LockOverlay extends StatelessWidget {
                 Container(
                   width: 88,
                   height: 88,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEEF2FF),
+                  decoration: BoxDecoration(
+                    color: colors.accent.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.lock,
                     size: 40,
-                    color: _accent,
+                    color: colors.accent,
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'DompetIQ is locked',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF101828),
+                    color: colors.ink,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Unlock with your biometrics or device PIN.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.5,
-                    color: Color(0xFF667085),
+                    color: colors.grey,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -149,7 +149,7 @@ class _LockOverlay extends StatelessWidget {
                   child: FilledButton(
                     onPressed: onUnlock,
                     style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
+                      backgroundColor: colors.accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),

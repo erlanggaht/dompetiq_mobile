@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/feat/user/user_service.dart';
@@ -77,8 +78,9 @@ class _AppDrawerState extends State<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(),
       child: SafeArea(
         child: Padding(
@@ -98,20 +100,17 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 18),
               Text(
                 _name.isEmpty ? 'DompetIQ' : _name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1C1C1C),
+                  color: colors.ink,
                   letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                _email,
-                style: const TextStyle(fontSize: 14, color: Color(0xFF87879D)),
-              ),
+              Text(_email, style: TextStyle(fontSize: 14, color: colors.grey)),
               const SizedBox(height: 24),
-              const Divider(height: 1, color: Color(0xFFEDEEF3)),
+              Divider(height: 1, color: colors.border),
               const SizedBox(height: 10),
               _DrawerItem(
                 icon: PhosphorIconsRegular.creditCard,
@@ -149,8 +148,8 @@ class _AppDrawerState extends State<AppDrawer> {
                 child: TextButton(
                   onPressed: _isSigningOut ? null : _signOut,
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFF2F4F9),
-                    foregroundColor: const Color(0xFF1C1C1C),
+                    backgroundColor: colors.border,
+                    foregroundColor: colors.ink,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),
                     ),
@@ -191,13 +190,14 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: const Color(0xFF667085), size: 22),
+      leading: Icon(icon, color: colors.grey, size: 22),
       title: Text(
         title,
-        style: const TextStyle(
-          color: Color(0xFF1C1C1C),
+        style: TextStyle(
+          color: colors.ink,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),

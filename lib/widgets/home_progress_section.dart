@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/budget/budget_model.dart';
 import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
-const _accent = Color(0xFF3B62FF);
-const _ink = Color(0xFF1C1C1C);
-const _muted = Color(0xFF667085);
-const _field = Color(0xFFE9EDF5);
 const _tabs = ['Budget', 'Account', 'Savings'];
 
 class HomeProgressSection extends StatefulWidget {
@@ -42,20 +39,21 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final periods = widget.budgets.map(BudgetPeriod.fromJson).toList();
     final period = activeBudget(periods);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Progress',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: _ink,
+              color: colors.ink,
             ),
           ),
         ),
@@ -76,10 +74,11 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
   }
 
   Widget _tabBar() {
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: _field,
+        color: colors.border.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -96,7 +95,7 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
                     duration: const Duration(milliseconds: 160),
                     padding: const EdgeInsets.symmetric(vertical: 9),
                     decoration: BoxDecoration(
-                      color: _tab == index ? _accent : Colors.transparent,
+                      color: _tab == index ? colors.accent : Colors.transparent,
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Text(
@@ -107,7 +106,9 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
                         fontWeight: _tab == index
                             ? FontWeight.w700
                             : FontWeight.w500,
-                        color: _tab == index ? Colors.white : _muted,
+                        color: _tab == index
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : colors.grey,
                       ),
                     ),
                   ),
@@ -217,15 +218,18 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
     required String title,
     required String message,
   }) {
+    final colors = context.appColors;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? colors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -233,21 +237,21 @@ class _HomeProgressSectionState extends State<HomeProgressSection> {
       ),
       child: Column(
         children: [
-          SolidIconBadge(icon: icon, color: _accent, size: 42),
+          SolidIconBadge(icon: icon, color: colors.accent, size: 42),
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: _ink,
+              color: colors.ink,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: _muted, height: 1.4),
+            style: TextStyle(fontSize: 12, color: colors.grey, height: 1.4),
           ),
         ],
       ),
@@ -263,36 +267,38 @@ class _BudgetProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final ratio = item.allocated == 0
         ? 0.0
         : (item.spent / item.allocated).clamp(0.0, 1.0);
     final over = item.remaining < 0;
     final accent = over
-        ? const Color(0xFFDC2626)
+        ? colors.danger
         : ratio >= 0.8
-        ? const Color(0xFFF59E0B)
-        : _accent;
+        ? colors.accent
+        : colors.accent;
     final icon =
         categoryStyle(item.categoryName)?.$1 ?? PhosphorIconsFill.chartPie;
 
     return _cardShell(
+      context: context,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              SolidIconBadge(icon: icon, color: _accent, size: 36),
+              SolidIconBadge(icon: icon, color: colors.accent, size: 36),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   item.categoryName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _ink,
+                    color: colors.ink,
                     height: 1.2,
                   ),
                 ),
@@ -307,7 +313,7 @@ class _BudgetProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 6,
-              backgroundColor: const Color(0xFFEFF1F5),
+              backgroundColor: colors.border,
               color: accent,
             ),
           ),
@@ -338,16 +344,18 @@ class _AccountProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return _cardShell(
+      context: context,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              const SolidIconBadge(
+              SolidIconBadge(
                 icon: PhosphorIconsFill.creditCard,
-                color: _accent,
+                color: colors.accent,
                 size: 36,
               ),
               const SizedBox(width: 8),
@@ -356,10 +364,10 @@ class _AccountProgressCard extends StatelessWidget {
                   card['name'] as String? ?? 'Card',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _ink,
+                    color: colors.ink,
                     height: 1.2,
                   ),
                 ),
@@ -383,20 +391,22 @@ class _SavingsProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final target = (goal['target'] as num?)?.toInt() ?? 0;
     final saved = (goal['saved'] as num?)?.toInt() ?? 0;
     final ratio = target == 0 ? 0.0 : (saved / target).clamp(0.0, 1.0);
 
     return _cardShell(
+      context: context,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              const SolidIconBadge(
+              SolidIconBadge(
                 icon: PhosphorIconsFill.piggyBank,
-                color: _accent,
+                color: colors.accent,
                 size: 36,
               ),
               const SizedBox(width: 8),
@@ -405,10 +415,10 @@ class _SavingsProgressCard extends StatelessWidget {
                   goal['name'] as String? ?? 'Goal',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _ink,
+                    color: colors.ink,
                     height: 1.2,
                   ),
                 ),
@@ -427,13 +437,13 @@ class _SavingsProgressCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: BoxDecoration(
-                      color: _accent.withValues(alpha: 0.12),
+                      color: colors.accent.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       PhosphorIconsRegular.plus,
                       size: 16,
-                      color: _accent,
+                      color: colors.accent,
                     ),
                   ),
                 ),
@@ -445,8 +455,8 @@ class _SavingsProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 6,
-              backgroundColor: const Color(0xFFEFF1F5),
-              color: _accent,
+              backgroundColor: colors.border,
+              color: colors.accent,
             ),
           ),
           const SizedBox(height: 6),
@@ -454,10 +464,10 @@ class _SavingsProgressCard extends StatelessWidget {
             '${(ratio * 100).round()}% of target',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: _accent,
+              color: colors.accent,
             ),
           ),
         ],
@@ -473,31 +483,38 @@ class _AmountText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return ValueListenableBuilder<bool>(
       valueListenable: BalanceVisibility.visible,
       builder: (context, visible, _) => Text(
         visible ? formatRupiah(amount) : '••••••',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w800,
-          color: _ink,
+          color: colors.ink,
         ),
       ),
     );
   }
 }
 
-Widget _cardShell({required Widget child, VoidCallback? onTap}) {
+Widget _cardShell({
+  required Widget child,
+  required BuildContext context,
+  VoidCallback? onTap,
+}) {
   final card = Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? context.appColors.border
+          : Colors.white,
       borderRadius: BorderRadius.circular(18),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
+          color: context.appColors.ink.withValues(alpha: 0.05),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),

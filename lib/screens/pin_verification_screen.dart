@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/feat/auth/pin_service.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
 import 'package:flutter_application_1/screens/device_limit_screen.dart';
 import 'package:flutter_application_1/screens/forgot_password_screen.dart';
@@ -109,30 +110,31 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final remaining = widget.expiresAt.difference(DateTime.now());
     final minutes = remaining.inMinutes.clamp(0, 5);
     final seconds = remaining.inSeconds.clamp(0, 5 * 60) % 60;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Verify PIN',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
-                  color: Color(0xFF1C1C1C),
+                  color: colors.ink,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Enter your 4-digit PIN to continue',
-                style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1C)),
+                style: TextStyle(fontSize: 16, color: colors.ink),
               ),
               const SizedBox(height: 26),
               AnimatedBuilder(
@@ -154,9 +156,9 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
                 Text(
                   _lockMessage!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFFDC2626),
+                    color: colors.danger,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -166,7 +168,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
                 remaining.isNegative
                     ? 'Session expired'
                     : 'Session expires in $minutes:${seconds.toString().padLeft(2, '0')}',
-                style: const TextStyle(fontSize: 13, color: Color(0xFF87879D)),
+                style: TextStyle(fontSize: 13, color: colors.grey),
               ),
               const SizedBox(height: 8),
               TextButton(
@@ -176,9 +178,9 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
                     builder: (context) => const ForgotPasswordScreen.pin(),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Forgot PIN?',
-                  style: TextStyle(color: Color(0xFF3B62FF)),
+                  style: TextStyle(color: colors.accent),
                 ),
               ),
               const SizedBox(height: 18),
@@ -193,7 +195,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen>
                       ? null
                       : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
+                    backgroundColor: colors.accent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

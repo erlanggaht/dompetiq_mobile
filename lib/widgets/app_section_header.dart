@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/widgets/app_top_bar.dart';
 
 class AppSectionHeader extends StatelessWidget {
@@ -19,7 +20,9 @@ class AppSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? context.appColors.border
+          : Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
       child: AppTopBar(
         title: title,

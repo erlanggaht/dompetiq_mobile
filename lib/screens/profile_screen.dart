@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/device_id.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/core/format.dart';
@@ -107,11 +108,12 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final name = _name.isEmpty ? 'DompetIQ' : _name;
     final username = formatUsername(_username);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: _loading && !_hasData
             ? const Center(child: CircularProgressIndicator())
@@ -149,15 +151,15 @@ class ProfileScreenState extends State<ProfileScreen> {
                       imageUrl: _avatar,
                       name: name,
                       radius: 34,
-                      backgroundColor: const Color(0xFFF2F4F7),
+                      backgroundColor: colors.border,
                       initialFontSize: 28,
                     ),
                     const SizedBox(height: 14),
                     Text(
                       name,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF101828),
+                      style: TextStyle(
+                        color: colors.ink,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
@@ -165,10 +167,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 3),
                     Text(
                       username,
-                      style: const TextStyle(
-                        color: Color(0xFF98A2B3),
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 26),
                     SizedBox(
@@ -177,7 +176,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       child: FilledButton(
                         onPressed: _editProfile,
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B62FF),
+                          backgroundColor: colors.accent,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9),
@@ -190,7 +189,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 34),
-                    const Divider(color: Color(0xFFE4E7EC), height: 1),
+                    Divider(color: colors.border, height: 1),
                     _ProfileMenuTile(
                       icon: PhosphorIconsRegular.gear,
                       title: 'Settings',
@@ -202,7 +201,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    const Divider(color: Color(0xFFE4E7EC), height: 1),
+                    Divider(color: colors.border, height: 1),
                     _ProfileMenuTile(
                       icon: PhosphorIconsRegular.signOut,
                       title: 'Log out',
@@ -241,7 +240,7 @@ class _ProfileMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? const Color(0xFFD92D20) : const Color(0xFF101828);
+    final color = danger ? context.appColors.danger : context.appColors.ink;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minTileHeight: 60,

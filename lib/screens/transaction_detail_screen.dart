@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/core/format.dart';
@@ -9,13 +10,8 @@ import 'package:flutter_application_1/screens/add_transaction_screen.dart';
 import 'package:flutter_application_1/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
 
-const _accent = Color(0xFF3B62FF);
 const _income = Color(0xFF16A34A);
 const _spending = Color(0xFFDC2626);
-const _ink = Color(0xFF1C1C1C);
-const _muted = Color(0xFF8A90A2);
-const _hairline = Color(0xFFEFF1F5);
-const _page = Color(0xFFF2F4F9);
 const _wib = Duration(hours: 7);
 
 class TransactionDetailScreen extends StatefulWidget {
@@ -127,7 +123,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         if (!didPop) _close();
       },
       child: Scaffold(
-        backgroundColor: _page,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(child: _buildBody()),
         bottomNavigationBar: _data == null || _error != null
             ? null
@@ -173,6 +169,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Widget _header() {
+    final colors = context.appColors;
     return Row(
       children: [
         InkWell(
@@ -182,24 +179,26 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? colors.border
+                  : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _hairline),
+              border: Border.all(color: colors.border),
             ),
-            child: const Icon(
+            child: Icon(
               PhosphorIconsRegular.arrowLeft,
-              color: _ink,
+              color: colors.ink,
               size: 20,
             ),
           ),
         ),
         const SizedBox(width: 12),
-        const Text(
+        Text(
           'Transaction Detail',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: _ink,
+            color: colors.ink,
             letterSpacing: -0.2,
           ),
         ),
@@ -208,6 +207,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Widget _heroCard(Color color) {
+    final colors = context.appColors;
     final style = categoryStyle(_category);
     final icon =
         style?.$1 ??
@@ -219,9 +219,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? colors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _hairline),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,17 +240,17 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                       _title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: _ink,
+                        color: colors.ink,
                         height: 1.3,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       formatDateShort(_date),
-                      style: const TextStyle(fontSize: 12, color: _muted),
+                      style: TextStyle(fontSize: 12, color: colors.grey),
                     ),
                   ],
                 ),
@@ -256,7 +258,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             ],
           ),
           const SizedBox(height: 18),
-          const Divider(height: 1, color: _hairline),
+          Divider(height: 1, color: colors.border),
           const SizedBox(height: 16),
           Text(
             _isIncome ? 'Income' : 'Spending',
@@ -291,16 +293,28 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   Widget _detailsCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? context.appColors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _hairline),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         children: [
           _row('Category', _categoryTitle),
-          const Divider(height: 1, color: _hairline, indent: 18, endIndent: 18),
+          Divider(
+            height: 1,
+            color: context.appColors.border,
+            indent: 18,
+            endIndent: 18,
+          ),
           _row('Account', _account),
-          const Divider(height: 1, color: _hairline, indent: 18, endIndent: 18),
+          Divider(
+            height: 1,
+            color: context.appColors.border,
+            indent: 18,
+            endIndent: 18,
+          ),
           _row('Transaction ID', widget.transactionId),
         ],
       ),
@@ -308,11 +322,12 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Widget _row(String label, String value) {
+    final colors = context.appColors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 13.5, color: _muted)),
+          Text(label, style: TextStyle(fontSize: 13.5, color: colors.grey)),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -320,10 +335,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: _ink,
+                color: colors.ink,
               ),
             ),
           ),
@@ -333,10 +348,13 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Widget _actions() {
+    final colors = context.appColors;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _hairline)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? colors.border
+            : Colors.white,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -351,8 +369,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     onPressed: _isBusy ? null : _delete,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _spending,
-                      side: const BorderSide(color: Color(0xFFF3C7C7)),
-                      backgroundColor: const Color(0xFFFEF5F5),
+                      side: BorderSide(color: colors.danger),
+                      backgroundColor: colors.danger.withValues(alpha: 0.08),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -372,7 +390,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   child: FilledButton(
                     onPressed: _isBusy ? null : _edit,
                     style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
+                      backgroundColor: colors.accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),

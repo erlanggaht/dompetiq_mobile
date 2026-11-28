@@ -19,7 +19,7 @@ class AppSubmitButton extends StatelessWidget {
     child: FilledButton(
       onPressed: loading ? null : onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFF3B62FF),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       child: loading

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/notification/notification_service.dart';
 import 'package:flutter_application_1/screens/change_pin_screen.dart';
@@ -81,7 +82,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -110,8 +111,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(PhosphorIconsRegular.bell, size: 44, color: Color(0xFFB9BDD0)),
+           children: [
+            Icon(
+              PhosphorIconsRegular.bell,
+              size: 44,
+              color: context.appColors.grey,
+            ),
             SizedBox(height: 12),
             Text(
               'No notifications',
@@ -135,6 +140,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _tile(Map<String, dynamic> item) {
+    final colors = context.appColors;
     final unread = item['readAt'] == null;
     final type = item['type'] as String? ?? '';
     final title = type == 'PIN_SETUP_REQUIRED'
@@ -151,9 +157,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? colors.border
+              : Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFEDEEF3)),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,12 +170,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B62FF).withValues(alpha: 0.1),
+                color: colors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 PhosphorIconsRegular.shieldCheck,
-                color: Color(0xFF3B62FF),
+                color: colors.accent,
                 size: 18,
               ),
             ),
@@ -186,19 +194,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF667085),
-                    ),
+                    style: TextStyle(fontSize: 12, color: colors.grey),
                   ),
                   if (createdAt != null) ...[
                     const SizedBox(height: 6),
                     Text(
                       formatDateShort(createdAt),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF98A2B3),
-                      ),
+                      style: TextStyle(fontSize: 11, color: colors.grey),
                     ),
                   ],
                 ],
@@ -209,8 +211,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 width: 8,
                 height: 8,
                 margin: const EdgeInsets.only(top: 6),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3B62FF),
+                decoration: BoxDecoration(
+                  color: colors.accent,
                   shape: BoxShape.circle,
                 ),
               ),

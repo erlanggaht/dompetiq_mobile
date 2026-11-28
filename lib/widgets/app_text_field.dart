@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-const _primary = Color(0xFF3B62FF);
-const _border = Color(0xFFE4E7EC);
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -35,32 +33,38 @@ class AppTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => TextFormField(
-    controller: controller,
-    enabled: enabled,
-    keyboardType: keyboardType,
-    obscureText: obscureText,
-    validator: validator,
-    readOnly: readOnly,
-    onTap: onTap,
-    inputFormatters: inputFormatters,
-    decoration: InputDecoration(
-      labelText: label,
-      prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
-      suffixIcon: suffixIcon,
-      errorText: errorText,
-      filled: true,
-      fillColor: enabled ? Colors.white : const Color(0xFFF2F4F7),
-      labelStyle: TextStyle(color: enabled ? null : const Color(0xFF98A2B3)),
-      hintStyle: TextStyle(color: enabled ? null : const Color(0xFF98A2B3)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: _borderStyle(_border),
-      enabledBorder: _borderStyle(_border),
-      focusedBorder: _borderStyle(_primary, width: 1.5),
-      errorBorder: _borderStyle(const Color(0xFFDC2626)),
-      focusedErrorBorder: _borderStyle(const Color(0xFFDC2626)),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+      readOnly: readOnly,
+      onTap: onTap,
+      inputFormatters: inputFormatters,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
+        suffixIcon: suffixIcon,
+        errorText: errorText,
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+        labelStyle: TextStyle(color: enabled ? null : colors.grey),
+        hintStyle: TextStyle(color: enabled ? null : colors.grey),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: _borderStyle(colors.border),
+        enabledBorder: _borderStyle(colors.border),
+        focusedBorder: _borderStyle(colors.accent, width: 1.5),
+        errorBorder: _borderStyle(colors.danger),
+        focusedErrorBorder: _borderStyle(colors.danger),
+      ),
+    );
+  }
 
   OutlineInputBorder _borderStyle(Color color, {double width = 1}) =>
       OutlineInputBorder(

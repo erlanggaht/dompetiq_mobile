@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart'
@@ -118,9 +119,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final name = widget.profile['fullName'] as String? ?? 'DompetIQ';
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -142,7 +144,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 imageUrl: _avatar,
                                 name: name,
                                 radius: 36,
-                                backgroundColor: Colors.white,
+                                backgroundColor: colors.border,
                               ),
                               Positioned(
                                 right: 0,
@@ -150,8 +152,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Container(
                                   width: 28,
                                   height: 28,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF101010),
+                                  decoration: BoxDecoration(
+                                    color: colors.ink,
                                     shape: BoxShape.circle,
                                   ),
                                   child: _uploadingAvatar
@@ -177,22 +179,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Text(
                         name,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 19,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF101828),
+                          color: colors.ink,
                         ),
                       ),
                       Text(
                         '@${widget.profile['username'] ?? ''}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF98A2B3),
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: colors.grey, fontSize: 14),
                       ),
                       const SizedBox(height: 28),
-                      const Divider(color: Color(0xFFE4E7EC), height: 1),
+                      Divider(color: colors.border, height: 1),
                       const SizedBox(height: 22),
                       _field(
                         'Full name',
@@ -234,7 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: FilledButton(
                           onPressed: _saving || _uploadingAvatar ? null : _save,
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B62FF),
+                            backgroundColor: colors.accent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),

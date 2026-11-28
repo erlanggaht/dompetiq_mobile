@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_application_1/widgets/solid_icon_badge.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class HomeActionCard extends StatelessWidget {
   final VoidCallback onIncome;
@@ -16,15 +17,18 @@ class HomeActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? colors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: colors.ink.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -36,21 +40,21 @@ class HomeActionCard extends StatelessWidget {
             _ActionItem(
               icon: PhosphorIconsFill.trendUp,
               label: 'Income',
-              color: const Color(0xFF3B62FF),
+              color: colors.accent,
               onTap: onIncome,
             ),
-            _divider(),
+            _divider(context),
             _ActionItem(
               icon: PhosphorIconsFill.trendDown,
               label: 'Spending',
-              color: const Color(0xFF3B62FF),
+              color: colors.accent,
               onTap: onSpending,
             ),
-            _divider(),
+            _divider(context),
             _ActionItem(
               icon: PhosphorIconsFill.squaresFour,
               label: 'Other',
-              color: const Color(0xFF3B62FF),
+              color: colors.accent,
               onTap: onTools,
             ),
           ],
@@ -59,8 +63,8 @@ class HomeActionCard extends StatelessWidget {
     );
   }
 
-  Widget _divider() =>
-      Container(width: 1, height: 40, color: const Color(0xFFEDEEF3));
+  Widget _divider(BuildContext context) =>
+      Container(width: 1, height: 40, color: context.appColors.border);
 }
 
 class _ActionItem extends StatelessWidget {
@@ -92,10 +96,10 @@ class _ActionItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1C1C1C),
+                    color: context.appColors.ink,
                   ),
                 ),
               ],

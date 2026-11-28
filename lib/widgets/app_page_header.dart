@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class AppPageHeader extends StatelessWidget {
   final String title;
@@ -17,6 +18,7 @@ class AppPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = context.appColors.ink;
     return SizedBox(
       height: 52,
       child: Stack(
@@ -28,13 +30,13 @@ class AppPageHeader extends StatelessWidget {
               child: IconButton(
                 onPressed: onBack ?? () => Navigator.pop(context),
                 icon: const Icon(PhosphorIconsRegular.arrowLeft),
-                color: const Color(0xFF101828),
+                color: color,
               ),
             ),
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF101828),
+            style: TextStyle(
+              color: color,
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),

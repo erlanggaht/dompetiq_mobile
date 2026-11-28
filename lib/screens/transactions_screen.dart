@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_mapper.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
@@ -14,10 +15,6 @@ import 'package:flutter_application_1/widgets/app_bottom_nav.dart';
 import 'package:flutter_application_1/widgets/recent_transaction.dart';
 
 const _filters = ['All', 'Income', 'Spending'];
-const _accent = Color(0xFF3B62FF);
-const _ink = Color(0xFF1C1C1C);
-const _muted = Color(0xFF8A90A2);
-const _field = Color(0xFFF2F4F9);
 const _sheetShape = RoundedRectangleBorder(
   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
 );
@@ -262,7 +259,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _field,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -277,7 +274,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
               hasUnreadNotifications: widget.hasUnreadNotifications,
             ),
             Container(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
               child: Column(
                 children: [
@@ -310,9 +307,9 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   Widget _chip(String label) {
     final selected = _filter == label;
     final color = switch (label) {
-      'Income' => const Color(0xFF16A34A),
-      'Spending' => const Color(0xFFDC2626),
-      _ => _accent,
+      'Income' => context.appColors.green,
+      'Spending' => context.appColors.danger,
+      _ => context.appColors.accent,
     };
     return Material(
       color: Colors.transparent,
@@ -329,7 +326,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? color : _field,
+            color: selected ? color : context.appColors.border,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
@@ -338,7 +335,9 @@ class TransactionsScreenState extends State<TransactionsScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? Colors.white : _muted,
+              color: selected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : context.appColors.grey,
             ),
           ),
         ),
@@ -347,31 +346,32 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Widget _searchField() {
+    final colors = context.appColors;
     return TextField(
       controller: _searchController,
       onChanged: _onSearchChanged,
       onSubmitted: (_) => _apply(),
       textInputAction: TextInputAction.search,
-      style: const TextStyle(fontSize: 13.5, color: _ink),
+      style: TextStyle(fontSize: 13.5, color: colors.ink),
       decoration: InputDecoration(
         isDense: true,
         filled: true,
-        fillColor: _field,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         hintText: 'Search note or amount',
-        hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
-        prefixIcon: const Icon(
+        hintStyle: TextStyle(fontSize: 13.5, color: colors.grey),
+        prefixIcon: Icon(
           PhosphorIconsRegular.magnifyingGlass,
           size: 19,
-          color: _muted,
+          color: colors.grey,
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 38),
         suffixIcon: _searchController.text.isEmpty
             ? null
             : IconButton(
-                icon: const Icon(
+                icon: Icon(
                   PhosphorIconsRegular.x,
                   size: 17,
-                  color: _muted,
+                  color: colors.grey,
                 ),
                 onPressed: () {
                   _searchController.clear();
@@ -394,6 +394,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
 
   Widget _filterButton() {
     final count = _activeCount;
+    final colors = context.appColors;
     return InkWell(
       onTap: _openFilters,
       borderRadius: BorderRadius.circular(10),
@@ -402,17 +403,17 @@ class TransactionsScreenState extends State<TransactionsScreen> {
         height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: _field,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Badge.count(
           count: count,
           isLabelVisible: count > 0,
-          backgroundColor: _accent,
+          backgroundColor: colors.accent,
           child: Icon(
             PhosphorIconsRegular.slidersHorizontal,
             size: 20,
-            color: count > 0 ? _accent : _muted,
+            color: count > 0 ? colors.accent : colors.grey,
           ),
         ),
       ),
@@ -442,7 +443,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   Future<void> _openFilters() async {
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: _sheetShape,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheet) {
@@ -459,13 +460,13 @@ class TransactionsScreenState extends State<TransactionsScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 16, 8, 4),
                   child: Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Filters',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: _ink,
+                            color: context.appColors.ink,
                           ),
                         ),
                       ),
@@ -527,7 +528,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
               width: 92,
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14, color: _muted),
+                style: TextStyle(fontSize: 14, color: context.appColors.grey),
               ),
             ),
             Expanded(
@@ -536,17 +537,17 @@ class TransactionsScreenState extends State<TransactionsScreen> {
                 textAlign: TextAlign.right,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: _ink,
+                  color: context.appColors.ink,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               PhosphorIconsRegular.caretRight,
               size: 20,
-              color: _muted,
+              color: context.appColors.grey,
             ),
           ],
         ),
@@ -557,7 +558,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   Future<int?> _pickAccount() async {
     return showModalBottomSheet<int>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: _sheetShape,
       builder: (context) => SafeArea(
         child: ListView(
@@ -580,7 +581,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
   Future<int?> _pickCategory() async {
     return showModalBottomSheet<int>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: _sheetShape,
       builder: (context) => SafeArea(
         child: ListView(
@@ -605,10 +606,10 @@ class TransactionsScreenState extends State<TransactionsScreen> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: _ink,
+          color: context.appColors.ink,
         ),
       ),
     );
@@ -618,7 +619,7 @@ class TransactionsScreenState extends State<TransactionsScreen> {
     return ListTile(
       title: Text(title),
       trailing: selected
-          ? const Icon(PhosphorIconsRegular.check, color: _accent)
+          ? Icon(PhosphorIconsRegular.check, color: context.appColors.accent)
           : null,
       onTap: () => Navigator.pop(context, value),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/balance_visibility.dart';
 import 'package:flutter_application_1/core/network/dio_client.dart';
 import 'package:flutter_application_1/feat/auth/login_service.dart';
@@ -40,11 +41,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF3B62FF), Color(0xFF2242D6)],
+            colors: [colors.accent, colors.accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -67,9 +69,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_wallet_rounded,
-                  color: Color(0xFF3B62FF),
+                  color: colors.accent,
                   size: 46,
                 ),
               ),

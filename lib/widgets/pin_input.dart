@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter/services.dart';
 
 class PinInputField extends StatefulWidget {
@@ -45,6 +46,7 @@ class _PinInputFieldState extends State<PinInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final pin = widget.controller.text;
     return GestureDetector(
       onTap: () => _focus.requestFocus(),
@@ -64,25 +66,25 @@ class _PinInputFieldState extends State<PinInputField> {
                 margin: const EdgeInsets.symmetric(horizontal: 7),
                 decoration: BoxDecoration(
                   color: isFocused || hasDigit
-                      ? Colors.white
-                      : const Color(0xFFF2F4F9),
+                      ? Theme.of(context).colorScheme.surface
+                      : colors.border.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     width: 2,
                     color: isFocused
-                        ? const Color(0xFF3B62FF)
+                        ? colors.accent
                         : hasDigit
-                        ? const Color(0xFF3B62FF).withValues(alpha: 0.35)
-                        : const Color(0xFFE4E7F0),
+                        ? colors.accent.withValues(alpha: 0.35)
+                        : colors.border,
                   ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   hasDigit ? pin[i] : '',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1C1C1C),
+                    color: colors.ink,
                   ),
                 ),
               );

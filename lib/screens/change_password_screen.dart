@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
+
 import 'package:flutter_application_1/feat/settings/change_password_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/app_password_field.dart';
@@ -52,7 +54,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -83,7 +85,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 ? PhosphorIconsRegular.eye
                                 : PhosphorIconsRegular.eyeSlash,
                             size: 20,
-                            color: const Color(0xFF667085),
+                             color: context.appColors.grey,
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
@@ -112,7 +114,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         child: FilledButton(
                           onPressed: _saving ? null : _save,
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B62FF),
+                            backgroundColor: context.appColors.accent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),

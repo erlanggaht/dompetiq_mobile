@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/category_style.dart';
 import 'package:flutter_application_1/widgets/confirm_delete_dialog.dart';
@@ -56,15 +57,15 @@ class RecentTransactionWidget extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   group,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B7280),
+                    color: context.appColors.grey,
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
-            _card(rows),
+            _card(rows, context),
           ],
         ),
       );
@@ -79,10 +80,12 @@ class RecentTransactionWidget extends StatelessWidget {
         group = label;
       } else {
         rows.add(
-          const Divider(
+          Divider(
             height: 1,
             thickness: 1,
-            color: Color(0xFFF0F1F5),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? context.appColors.border
+                : Colors.white,
             indent: 74,
             endIndent: 16,
           ),
@@ -108,11 +111,11 @@ class RecentTransactionWidget extends StatelessWidget {
                         ? PhosphorIconsRegular.arrowsLeftRight
                         : style?.$1 ?? PhosphorIconsRegular.tag,
                     color: isTransfer
-                        ? const Color(0xFF3B62FF)
+                        ? context.appColors.accent
                         : style?.$2 ??
                               (isIncome
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFF64748B)),
+                                  ? context.appColors.green
+                                  : context.appColors.grey),
                   );
                 },
               ),
@@ -125,10 +128,10 @@ class RecentTransactionWidget extends StatelessWidget {
                       item['title'],
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1C),
+                        color: context.appColors.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -136,9 +139,9 @@ class RecentTransactionWidget extends StatelessWidget {
                       grouped
                           ? item['categoryLabel'] as String? ?? 'Transaction'
                           : item['date'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF87879D),
+                        color: context.appColors.grey,
                       ),
                     ),
                   ],
@@ -153,8 +156,8 @@ class RecentTransactionWidget extends StatelessWidget {
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: isIncome
-                        ? const Color(0xFF16A34A)
-                        : const Color(0xFFDC2626),
+                        ? context.appColors.green
+                        : context.appColors.danger,
                   ),
                 ),
               ),
@@ -190,12 +193,14 @@ class RecentTransactionWidget extends StatelessWidget {
     );
   }
 
-  Widget _card(List<Widget> rows) {
+  Widget _card(List<Widget> rows, BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? context.appColors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -216,7 +221,7 @@ class _DeleteBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFDC2626),
+      color: context.appColors.danger,
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: const Row(

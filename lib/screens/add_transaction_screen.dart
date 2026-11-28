@@ -3,16 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/category_style.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
 
-const _accent = Color(0xFF3B62FF);
-const _income = Color(0xFF16A34A);
-const _spending = Color(0xFFDC2626);
-const _ink = Color(0xFF111827);
-const _muted = Color(0xFF8A90A2);
-const _hairline = Color(0xFFEFF1F5);
 const _maxAmount = 2147483647;
 
 class AddTransactionScreen extends StatefulWidget {
@@ -175,7 +170,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Future<void> _pickAccount() async {
     final picked = await showModalBottomSheet<int>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -184,14 +179,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Text(
                 'Select account',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: _ink,
+                  color: context.appColors.ink,
                 ),
               ),
             ),
@@ -199,7 +194,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ListTile(
                 title: Text(account['name'] as String),
                 trailing: _rekeningUserId == account['rekeningUserId']
-                    ? const Icon(PhosphorIconsRegular.check, color: _accent)
+                    ? Icon(
+                        PhosphorIconsRegular.check,
+                        color: context.appColors.accent,
+                      )
                     : null,
                 onTap: () =>
                     Navigator.pop(context, account['rekeningUserId'] as int),
@@ -274,7 +272,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -300,7 +298,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   child: FilledButton(
                     onPressed: (_isLoading || _isSaving) ? null : _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
+                      backgroundColor: context.appColors.accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -320,7 +318,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 : _type == 'Income'
                                 ? 'Add Income'
                                 : 'Add Spending',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15.5,
                               fontWeight: FontWeight.w600,
                             ),
@@ -364,11 +362,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             InkWell(
               onTap: () => Navigator.pop(context),
               borderRadius: BorderRadius.circular(10),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.all(6),
                 child: Icon(
                   PhosphorIconsRegular.arrowLeft,
-                  color: _ink,
+                  color: context.appColors.ink,
                   size: 22,
                 ),
               ),
@@ -378,10 +376,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               widget.transaction != null
                   ? 'Edit Transaction'
                   : 'Add Transaction',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: _ink,
+                color: context.appColors.ink,
                 letterSpacing: -0.2,
               ),
             ),
@@ -391,33 +389,37 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF2F4F8),
+            color: context.appColors.border.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
-              _typeTab('Income', 'Income', _income),
-              _typeTab('Spending', 'Spending', _spending),
+              _typeTab('Income', 'Income', context.appColors.green),
+              _typeTab('Spending', 'Spending', context.appColors.danger),
             ],
           ),
         ),
         const SizedBox(height: 28),
-        const Text(
+        Text(
           'Amount',
-          style: TextStyle(fontSize: 13, color: _muted, letterSpacing: 0.2),
+          style: TextStyle(
+            fontSize: 13,
+            color: context.appColors.grey,
+            letterSpacing: 0.2,
+          ),
         ),
         const SizedBox(height: 6),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 8, top: 6),
               child: Text(
                 'Rp',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: _muted,
+                  color: context.appColors.grey,
                 ),
               ),
             ),
@@ -441,16 +443,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       },
                 onSubmitted: kIsWeb ? (_) => _noteFocus.requestFocus() : null,
                 inputFormatters: [ThousandsFormatter()],
-                cursorColor: _accent,
-                style: const TextStyle(
+                cursorColor: context.appColors.accent,
+                style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.w800,
-                  color: _ink,
+                  color: context.appColors.ink,
                   letterSpacing: -1,
                   height: 1.15,
                 ),
                 decoration: const InputDecoration(
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -461,15 +467,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         const SizedBox(height: 20),
         if (kIsWeb) _QuickAmountRow(onQuickAmount: _setQuickAmount),
         if (kIsWeb) const SizedBox(height: 20),
-        const Divider(height: 1, color: _hairline),
+        Divider(height: 1, color: context.appColors.border),
         const SizedBox(height: 22),
-        const Text(
+        Text(
           'Category',
-          style: TextStyle(fontSize: 13, color: _muted, letterSpacing: 0.2),
+          style: TextStyle(
+            fontSize: 13,
+            color: context.appColors.grey,
+            letterSpacing: 0.2,
+          ),
         ),
         const SizedBox(height: 14),
         if (categories.isEmpty)
-          const Text('No category available', style: TextStyle(color: _muted))
+          Text(
+            'No category available',
+            style: TextStyle(color: context.appColors.grey),
+          )
         else
           GridView.count(
             crossAxisCount: 4,
@@ -481,20 +494,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             children: categories.map(_categoryTile).toList(),
           ),
         const SizedBox(height: 18),
-        const Divider(height: 1, color: _hairline),
+        Divider(height: 1, color: context.appColors.border),
         _metaRow('Account', _accountName, _pickAccount),
-        const Divider(height: 1, color: _hairline),
+        Divider(height: 1, color: context.appColors.border),
         _metaRow('Date', formatDateShort(_date), _pickDate),
-        const Divider(height: 1, color: _hairline),
+        Divider(height: 1, color: context.appColors.border),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 92,
                 child: Text(
                   'Note',
-                  style: TextStyle(fontSize: 14.5, color: _muted),
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    color: context.appColors.grey,
+                  ),
                 ),
               ),
               Expanded(
@@ -507,23 +523,27 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _noteFocus.unfocus(),
                   onEditingComplete: _noteFocus.unfocus,
-                  cursorColor: _accent,
+                  cursorColor: context.appColors.accent,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w600,
-                    color: _ink,
+                    color: context.appColors.ink,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     counterText: '',
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 16),
                     hintText: 'Add a note',
                     hintStyle: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w500,
-                      color: _muted,
+                      color: context.appColors.grey,
                     ),
                   ),
                 ),
@@ -531,7 +551,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ],
           ),
         ),
-        const Divider(height: 1, color: _hairline),
+        Divider(height: 1, color: context.appColors.border),
       ],
     );
   }
@@ -564,14 +584,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: selected ? color : _muted),
+              Icon(
+                icon,
+                size: 16,
+                color: selected ? color : context.appColors.grey,
+              ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? color : _muted,
+                  color: selected ? color : context.appColors.grey,
                 ),
               ),
             ],
@@ -597,13 +621,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: selected ? _accent : const Color(0xFFF2F4F8),
+              color: selected
+                  ? context.appColors.accent
+                  : context.appColors.border,
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               size: 21,
-              color: selected ? Colors.white : const Color(0xFF6B7280),
+              color: selected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : context.appColors.grey,
             ),
           ),
           const SizedBox(height: 7),
@@ -615,7 +643,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? _ink : _muted,
+              color: selected ? context.appColors.ink : context.appColors.grey,
             ),
           ),
         ],
@@ -634,7 +662,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               width: 92,
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14.5, color: _muted),
+                style: TextStyle(fontSize: 14.5, color: context.appColors.grey),
               ),
             ),
             Expanded(
@@ -643,17 +671,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 textAlign: TextAlign.right,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w600,
-                  color: _ink,
+                  color: context.appColors.ink,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               PhosphorIconsRegular.caretRight,
               size: 20,
-              color: Color(0xFFC3C8D6),
+              color: context.appColors.border,
             ),
           ],
         ),

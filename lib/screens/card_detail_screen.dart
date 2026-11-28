@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/card/card_service.dart';
 import 'package:flutter_application_1/widgets/card_visual.dart';
 
@@ -166,13 +167,14 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final name = widget.card['name'] as String? ?? 'Card';
     final last4 = '${widget.card['last4'] ?? ''}';
     final saldo = (widget.card['saldo'] as num?)?.toInt() ?? 0;
     final active = widget.card['isActive'] == true;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -181,11 +183,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
               alignment: Alignment.centerLeft,
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.close,
-                  color: Color(0xFF1C1C1C),
-                  size: 28,
-                ),
+                icon: Icon(Icons.close, color: colors.ink, size: 28),
               ),
             ),
             const SizedBox(height: 12),
@@ -217,7 +215,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
                                 width: 38,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD0D5DD),
+                                  color: colors.grey,
                                   borderRadius: BorderRadius.circular(9),
                                 ),
                               ),
@@ -261,22 +259,22 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(18),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x0D000000),
+                    color: colors.ink.withValues(alpha: 0.05),
                     blurRadius: 12,
                     offset: Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Text(
                     'Recent activity',
                     style: TextStyle(
-                      color: Color(0xFF1C1C1C),
+                      color: colors.ink,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -284,7 +282,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
                   SizedBox(height: 28),
                   Text(
                     'No recent activity',
-                    style: TextStyle(color: Color(0xFF667085)),
+                    style: TextStyle(color: colors.grey),
                   ),
                 ],
               ),
@@ -308,7 +306,7 @@ class _DetailRow extends StatelessWidget {
     child: Row(
       children: [
         Expanded(
-          child: Text(label, style: const TextStyle(color: Color(0xFF667085))),
+          child: Text(label, style: TextStyle(color: context.appColors.grey)),
         ),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
@@ -331,8 +329,8 @@ class _Action extends StatelessWidget {
         IconButton(
           onPressed: onTap,
           style: IconButton.styleFrom(
-            backgroundColor: const Color(0xFFE9EEF9),
-            foregroundColor: const Color(0xFF1C1C1C),
+            backgroundColor: context.appColors.border.withValues(alpha: 0.45),
+            foregroundColor: context.appColors.ink,
             fixedSize: const Size(48, 48),
           ),
           icon: Icon(icon),
@@ -341,7 +339,7 @@ class _Action extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF667085), fontSize: 12),
+          style: TextStyle(color: context.appColors.grey, fontSize: 12),
         ),
       ],
     ),

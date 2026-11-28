@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/config.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 
@@ -86,8 +87,9 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -116,14 +118,14 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
           : SafeArea(
               child: Column(
                 children: [
-                  const Padding(
+                    Padding(
                     padding: EdgeInsets.all(24),
                     child: Column(
                       children: [
                         Icon(
                           PhosphorIconsRegular.devices,
                           size: 56,
-                          color: Color(0xFF3B62FF),
+                          color: colors.accent,
                         ),
                         SizedBox(height: 12),
                         Text(
@@ -131,7 +133,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 22,
-                            color: Color(0xFF1C1C1C),
+                            color: colors.ink,
                           ),
                         ),
                         SizedBox(height: 6),
@@ -140,7 +142,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
-                            color: Color(0xFF1C1C1C),
+                            color: colors.ink,
                           ),
                         ),
                       ],
@@ -162,9 +164,9 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).brightness == Brightness.dark ? colors.border : Colors.white,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: colors.border),
                           ),
                           child: Row(
                             children: [
@@ -172,7 +174,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                                 isCurrent
                                     ? PhosphorIconsRegular.deviceMobile
                                     : PhosphorIconsRegular.devices,
-                                color: const Color(0xFF3B62FF),
+                                color: colors.accent,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -196,9 +198,9 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                                         null)
                                       Text(
                                         'Last active: ${DateTime.parse(device['refreshTokens']['createdAt']).toLocal().toString().substring(0, 16)}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey,
+                                          color: colors.grey,
                                         ),
                                       ),
                                   ],
@@ -230,7 +232,7 @@ class _DeviceLimitScreenState extends State<DeviceLimitScreen> {
                       child: ElevatedButton(
                         onPressed: () => _retryLogin(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B62FF),
+                          backgroundColor: colors.accent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class AppSelectField<T> extends StatelessWidget {
   final String label;
@@ -21,40 +22,43 @@ class AppSelectField<T> extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: enabled ? onTap : null,
-    borderRadius: BorderRadius.circular(14),
-    child: InputDecorator(
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
-        suffixIcon: const Icon(Icons.keyboard_arrow_down),
-        errorText: errorText,
-        filled: true,
-        fillColor: enabled ? Colors.white : const Color(0xFFF2F4F7),
-        labelStyle: TextStyle(color: enabled ? null : const Color(0xFF98A2B3)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(14),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
+          suffixIcon: const Icon(Icons.keyboard_arrow_down),
+          errorText: errorText,
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surface,
+          labelStyle: TextStyle(color: enabled ? null : colors.grey),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          border: _border(colors.border),
+          enabledBorder: _border(colors.border),
+          focusedBorder: _border(colors.accent, width: 1.5),
+          errorBorder: _border(colors.danger),
+          focusedErrorBorder: _border(colors.danger),
         ),
-        border: _border(const Color(0xFFE4E7EC)),
-        enabledBorder: _border(const Color(0xFFE4E7EC)),
-        focusedBorder: _border(const Color(0xFF3B62FF), width: 1.5),
-        errorBorder: _border(const Color(0xFFDC2626)),
-        focusedErrorBorder: _border(const Color(0xFFDC2626)),
-      ),
-      child: Text(
-        valueLabel ?? 'Select $label',
-        style: TextStyle(
-          color: !enabled
-              ? const Color(0xFF98A2B3)
-              : valueLabel == null
-              ? const Color(0xFF98A2B3)
-              : const Color(0xFF1C1C1C),
+        child: Text(
+          valueLabel ?? 'Select $label',
+          style: TextStyle(
+            color: !enabled
+                ? colors.grey
+                : valueLabel == null
+                ? colors.grey
+                : colors.ink,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   OutlineInputBorder _border(Color color, {double width = 1}) =>
       OutlineInputBorder(

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
+
 class ProfileAvatar extends StatefulWidget {
   final String? imageUrl;
   final String name;
   final double radius;
-  final Color backgroundColor;
-  final Color initialColor;
+  final Color? backgroundColor;
+  final Color? initialColor;
   final double initialFontSize;
 
   const ProfileAvatar({
@@ -13,8 +15,8 @@ class ProfileAvatar extends StatefulWidget {
     required this.imageUrl,
     required this.name,
     required this.radius,
-    this.backgroundColor = const Color(0xFFEDF1FF),
-    this.initialColor = const Color(0xFF3B62FF),
+    this.backgroundColor,
+    this.initialColor,
     this.initialFontSize = 26,
   });
 
@@ -36,12 +38,13 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final trimmed = widget.name.trim();
     final initial = trimmed.isEmpty ? 'D' : trimmed[0].toUpperCase();
 
     return CircleAvatar(
       radius: widget.radius,
-      backgroundColor: widget.backgroundColor,
+      backgroundColor: widget.backgroundColor ?? colors.border,
       backgroundImage: _hasImage ? NetworkImage(widget.imageUrl!) : null,
       onBackgroundImageError: _hasImage
           ? (_, _) => setState(() => _failedUrl = widget.imageUrl)
@@ -53,7 +56,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
               style: TextStyle(
                 fontSize: widget.initialFontSize,
                 fontWeight: FontWeight.w700,
-                color: widget.initialColor,
+                color: widget.initialColor ?? colors.accent,
               ),
             ),
     );

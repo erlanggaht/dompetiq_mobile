@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/config.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/auth/forgot_password_service.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'package:flutter_application_1/widgets/app_submit_button.dart';
@@ -77,8 +78,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
@@ -86,28 +88,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       PhosphorIconsRegular.envelopeSimple,
                       size: 56,
-                      color: Color(0xFF3B62FF),
+                      color: colors.accent,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Check your email',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 22,
-                        color: Color(0xFF1C1C1C),
+                        color: colors.ink,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       widget.sentMessage,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF1C1C1C),
-                      ),
+                      style: TextStyle(fontSize: 15, color: colors.ink),
                     ),
                     const SizedBox(height: 26),
                     SizedBox(
@@ -122,7 +121,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           (route) => false,
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B62FF),
+                          backgroundColor: colors.accent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -144,20 +143,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 26,
-                        color: Color(0xFF1C1C1C),
+                        color: colors.ink,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       widget.description,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF1C1C1C),
-                      ),
+                      style: TextStyle(fontSize: 16, color: colors.ink),
                     ),
                     const SizedBox(height: 26),
                     AppTextField(
@@ -174,12 +170,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         'Back',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF87879D),
-                        ),
+                        style: TextStyle(fontSize: 14, color: colors.grey),
                       ),
                     ),
                   ],

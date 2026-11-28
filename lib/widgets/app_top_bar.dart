@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 
 class AppTopBar extends StatelessWidget {
   final String title;
   final VoidCallback? onOpenMenu;
   final VoidCallback? onOpenNotifications;
-  final Color foreground;
+  final Color? foreground;
   final bool hasUnreadNotifications;
 
   const AppTopBar({
@@ -13,12 +14,13 @@ class AppTopBar extends StatelessWidget {
     required this.title,
     this.onOpenMenu,
     this.onOpenNotifications,
-    this.foreground = const Color(0xFF1C1C1C),
+    this.foreground,
     this.hasUnreadNotifications = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = foreground ?? context.appColors.ink;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -30,11 +32,7 @@ class AppTopBar extends StatelessWidget {
               child: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: onOpenMenu,
-                icon: Icon(
-                  PhosphorIconsRegular.list,
-                  color: foreground,
-                  size: 26,
-                ),
+                icon: Icon(PhosphorIconsRegular.list, color: color, size: 26),
               ),
             ),
             const Spacer(),
@@ -47,11 +45,7 @@ class AppTopBar extends StatelessWidget {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(
-                      PhosphorIconsRegular.bell,
-                      color: foreground,
-                      size: 24,
-                    ),
+                    Icon(PhosphorIconsRegular.bell, color: color, size: 24),
                     if (hasUnreadNotifications)
                       Positioned(
                         right: -1,
@@ -60,7 +54,7 @@ class AppTopBar extends StatelessWidget {
                           width: 9,
                           height: 9,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF22C55E),
+                            color: context.appColors.green,
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 1.5),
                           ),
@@ -80,7 +74,7 @@ class AppTopBar extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: foreground,
+              color: color,
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/card/card_service.dart';
 import 'package:flutter_application_1/feat/transaction/transaction_service.dart';
 import 'package:flutter_application_1/screens/card_detail_screen.dart';
@@ -153,8 +154,9 @@ class CardsScreenState extends State<CardsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -203,11 +205,15 @@ class CardsScreenState extends State<CardsScreen> {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? colors.border
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                  boxShadow: const [
+                                  boxShadow: [
                                     BoxShadow(
-                                      color: Color(0x0D000000),
+                                      color: colors.ink.withValues(alpha: 0.05),
                                       blurRadius: 12,
                                       offset: Offset(0, 4),
                                     ),
@@ -265,17 +271,17 @@ class CardsScreenState extends State<CardsScreen> {
                                                 card['isActive'] == true
                                                     ? 'Active'
                                                     : 'Inactive',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Color(0xFF667085),
+                                                  color: colors.grey,
                                                 ),
                                               ),
                                               if (primary) ...[
                                                 const SizedBox(width: 8),
-                                                const Text(
+                                                Text(
                                                   'Primary',
                                                   style: TextStyle(
-                                                    color: Color(0xFF3B62FF),
+                                                    color: colors.accent,
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w700,
                                                   ),
@@ -307,8 +313,8 @@ class CardsScreenState extends State<CardsScreen> {
                   icon: const Icon(Icons.add, size: 16),
                   label: Text(_addingCard ? 'Adding...' : 'Add card'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
-                    foregroundColor: Colors.white,
+                    backgroundColor: colors.accent,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 5,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     minimumSize: const Size(0, 40),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/format.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/budget/budget_model.dart';
 import 'package:flutter_application_1/feat/budget/budget_service.dart';
@@ -111,8 +112,9 @@ class BudgetScreenState extends State<BudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -142,9 +144,9 @@ class BudgetScreenState extends State<BudgetScreen> {
                   icon: const Icon(PhosphorIconsRegular.plus, size: 16),
                   label: const Text('Add budget'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B62FF),
+                    backgroundColor: colors.accent,
                     foregroundColor: Colors.white,
-                    shadowColor: const Color(0xFF3B62FF).withValues(alpha: 0.3),
+                    shadowColor: colors.accent.withValues(alpha: 0.3),
                     elevation: 5,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     minimumSize: const Size(0, 40),
@@ -217,17 +219,17 @@ class BudgetScreenState extends State<BudgetScreen> {
         Icon(
           PhosphorIconsRegular.chartPie,
           size: 44,
-          color: const Color(0xFFB9BDD0),
+          color: context.appColors.grey,
         ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           'No budget yet',
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Add an allocation for a spending category',
-          style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+          style: TextStyle(fontSize: 13, color: context.appColors.grey),
         ),
       ],
     ),
@@ -272,7 +274,7 @@ class BudgetScreenState extends State<BudgetScreen> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -327,9 +329,9 @@ class BudgetScreenState extends State<BudgetScreen> {
                           item == null
                               ? 'Only categories without a budget are shown'
                               : 'Change the allocation for this category',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF667085),
+                            color: context.appColors.grey,
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -410,7 +412,7 @@ class BudgetScreenState extends State<BudgetScreen> {
                                     }
                                   },
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF3B62FF),
+                              backgroundColor: context.appColors.accent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -469,7 +471,7 @@ class BudgetScreenState extends State<BudgetScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFD92D20),
+              backgroundColor: context.appColors.danger,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
@@ -498,22 +500,24 @@ class _PeriodToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9EDF5),
+        color: colors.border.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          _segment('Monthly', 'monthly'),
-          _segment('Weekly', 'weekly'),
+          _segment(context, 'Monthly', 'monthly'),
+          _segment(context, 'Weekly', 'weekly'),
         ],
       ),
     );
   }
 
-  Widget _segment(String label, String value) {
+  Widget _segment(BuildContext context, String label, String value) {
+    final colors = context.appColors;
     final active = selected == value;
     return Expanded(
       child: GestureDetector(
@@ -522,12 +526,14 @@ class _PeriodToggle extends StatelessWidget {
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(
-            color: active ? Colors.white : Colors.transparent,
+            color: active
+                ? Theme.of(context).colorScheme.surface
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
             boxShadow: active
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: colors.ink.withValues(alpha: 0.05),
                       blurRadius: 6,
                     ),
                   ]
@@ -539,7 +545,7 @@ class _PeriodToggle extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-              color: active ? const Color(0xFF101828) : const Color(0xFF667085),
+              color: active ? colors.ink : colors.grey,
             ),
           ),
         ),
@@ -555,6 +561,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final current = period;
     final allocated = current?.totalAllocated ?? 0;
     final spent = current?.totalSpent ?? 0;
@@ -574,14 +581,14 @@ class _SummaryCard extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               range,
-              style: const TextStyle(color: Color(0xFF667085), fontSize: 12),
+              style: TextStyle(color: colors.grey, fontSize: 12),
             ),
           ),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF3B62FF), Color(0xFF2242D6)],
+            gradient: LinearGradient(
+              colors: [colors.accent, colors.accent.withValues(alpha: 0.72)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -660,25 +667,28 @@ class _BudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final ratio = item.allocated == 0
         ? 0.0
         : (item.spent / item.allocated).clamp(0.0, 1.0);
     final color = ratio >= 1
-        ? const Color(0xFFDC2626)
+        ? colors.danger
         : ratio >= 0.7
-        ? const Color(0xFFF59E0B)
-        : const Color(0xFF3B62FF);
+        ? colors.accent
+        : colors.accent;
     final over = item.remaining < 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? colors.border
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -705,32 +715,32 @@ class _BudgetCard extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626).withValues(alpha: 0.1),
+                    color: colors.danger.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(99),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Over budget',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFDC2626),
+                      color: colors.danger,
                     ),
                   ),
                 ),
               IconButton(
                 onPressed: onEdit,
-                icon: const Icon(
+                icon: Icon(
                   PhosphorIconsRegular.pencil,
                   size: 18,
-                  color: Color(0xFF667085),
+                  color: colors.grey,
                 ),
               ),
               IconButton(
                 onPressed: onDelete,
-                icon: const Icon(
+                icon: Icon(
                   PhosphorIconsRegular.trash,
                   size: 18,
-                  color: Color(0xFFD92D20),
+                  color: colors.danger,
                 ),
               ),
             ],
@@ -748,7 +758,7 @@ class _BudgetCard extends StatelessWidget {
               ),
               Text(
                 'of ${formatRupiah(item.allocated)}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF667085)),
+                style: TextStyle(fontSize: 12, color: colors.grey),
               ),
             ],
           ),
@@ -758,7 +768,7 @@ class _BudgetCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 7,
-              backgroundColor: const Color(0xFFEFF1F5),
+              backgroundColor: colors.border,
               color: color,
             ),
           ),
@@ -776,9 +786,7 @@ class _BudgetCard extends StatelessWidget {
                     : '${formatRupiah(item.remaining)} left',
                 style: TextStyle(
                   fontSize: 11,
-                  color: over
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFF667085),
+                  color: over ? colors.danger : colors.grey,
                 ),
               ),
             ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/core/network/server_error.dart';
 import 'package:flutter_application_1/feat/report/report_service.dart';
@@ -127,7 +128,7 @@ class ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(onHome: () => Navigator.pop(context))
           : null,
@@ -225,14 +226,15 @@ class ReportScreenState extends State<ReportScreen> {
 
   Widget _summaryCard(Map<String, dynamic> current) {
     final changes = _data['changes'] as Map<String, dynamic>? ?? {};
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -245,25 +247,34 @@ class ReportScreenState extends State<ReportScreen> {
             current['income'],
             changes['income'],
             const Color(0xFF16A34A),
+            context,
           ),
-          _divider(),
+          _divider(context),
           _stat(
             'Spending',
             current['spending'],
             changes['spending'],
             const Color(0xFFDC2626),
+            context,
           ),
-          _divider(),
-          _stat('Net', current['net'], null, const Color(0xFF3B62FF)),
+          _divider(context),
+          _stat('Net', current['net'], null, colors.accent, context),
         ],
       ),
     );
   }
 
-  Widget _divider() =>
-      Container(width: 1, height: 52, color: const Color(0xFFEDEEF3));
+  Widget _divider(BuildContext context) =>
+      Container(width: 1, height: 52, color: context.appColors.border);
 
-  Widget _stat(String label, dynamic value, dynamic change, Color color) {
+  Widget _stat(
+    String label,
+    dynamic value,
+    dynamic change,
+    Color color,
+    BuildContext context,
+  ) {
+    final colors = context.appColors;
     final amount = (value as num?)?.toInt() ?? 0;
     final percent = change == null
         ? null
@@ -271,10 +282,7 @@ class ReportScreenState extends State<ReportScreen> {
     return Expanded(
       child: Column(
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF667085)),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: colors.grey)),
           const SizedBox(height: 6),
           Text(
             formatRupiah(amount),
@@ -287,10 +295,7 @@ class ReportScreenState extends State<ReportScreen> {
           ),
           if (percent != null) ...[
             const SizedBox(height: 4),
-            Text(
-              percent,
-              style: const TextStyle(fontSize: 10, color: Color(0xFF98A2B3)),
-            ),
+            Text(percent, style: TextStyle(fontSize: 10, color: colors.grey)),
           ],
         ],
       ),
@@ -298,6 +303,7 @@ class ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _categoryCard(Map<String, dynamic> category) {
+    final colors = context.appColors;
     final amount = (category['amount'] as num?)?.toInt() ?? 0;
     final percent = (category['percent'] as num?)?.toDouble() ?? 0;
     final isIncome = category['type'] == 'Income';
@@ -305,11 +311,11 @@ class ReportScreenState extends State<ReportScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -334,9 +340,7 @@ class ReportScreenState extends State<ReportScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: isIncome
-                      ? const Color(0xFF16A34A)
-                      : const Color(0xFF1C1C1C),
+                  color: isIncome ? const Color(0xFF16A34A) : colors.ink,
                 ),
               ),
             ],
@@ -347,7 +351,7 @@ class ReportScreenState extends State<ReportScreen> {
             child: LinearProgressIndicator(
               value: percent.clamp(0, 100) / 100,
               minHeight: 6,
-              backgroundColor: const Color(0xFFEDEEF3),
+              backgroundColor: colors.border,
               color: isIncome
                   ? const Color(0xFF16A34A)
                   : const Color(0xFFDC2626),
@@ -356,7 +360,7 @@ class ReportScreenState extends State<ReportScreen> {
           const SizedBox(height: 6),
           Text(
             '${percent.round()}%',
-            style: const TextStyle(fontSize: 10, color: Color(0xFF98A2B3)),
+            style: TextStyle(fontSize: 10, color: colors.grey),
           ),
         ],
       ),
@@ -376,11 +380,11 @@ class ReportScreenState extends State<ReportScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
+            color: context.appColors.ink.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -389,12 +393,17 @@ class ReportScreenState extends State<ReportScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [for (final item in trend) _trendColumn(item, max)],
+        children: [for (final item in trend) _trendColumn(item, max, context)],
       ),
     );
   }
 
-  Widget _trendColumn(Map<String, dynamic> item, double max) {
+  Widget _trendColumn(
+    Map<String, dynamic> item,
+    double max,
+    BuildContext context,
+  ) {
+    final colors = context.appColors;
     final key = item['month'] as String? ?? '';
     final label = key.length >= 7
         ? _shortMonths[int.parse(key.substring(5, 7)) - 1]
@@ -416,10 +425,7 @@ class ReportScreenState extends State<ReportScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF667085)),
-        ),
+        Text(label, style: TextStyle(fontSize: 10, color: colors.grey)),
       ],
     );
   }
@@ -439,11 +445,11 @@ class ReportScreenState extends State<ReportScreen> {
   Widget _emptyCard(String message) => Container(
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      boxShadow: const [
+      boxShadow: [
         BoxShadow(
-          color: Color(0x0D000000),
+          color: context.appColors.ink.withValues(alpha: 0.05),
           blurRadius: 12,
           offset: Offset(0, 4),
         ),
@@ -452,7 +458,7 @@ class ReportScreenState extends State<ReportScreen> {
     child: Text(
       message,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 13, color: Color(0xFF667085)),
+      style: TextStyle(fontSize: 13, color: context.appColors.grey),
     ),
   );
 }

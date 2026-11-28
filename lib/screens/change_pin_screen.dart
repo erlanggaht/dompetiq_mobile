@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
+
 import 'package:flutter_application_1/feat/settings/security_service.dart';
 import 'package:flutter_application_1/widgets/app_page_header.dart';
 import 'package:flutter_application_1/widgets/pin_input.dart';
@@ -103,7 +105,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -172,8 +174,8 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: const TextStyle(
-      color: Color(0xFF344054),
+    style: TextStyle(
+      color: context.appColors.grey,
       fontSize: 14,
       fontWeight: FontWeight.w600,
     ),

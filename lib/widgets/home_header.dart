@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:flutter_application_1/core/balance_visibility.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/core/format.dart';
 import 'package:flutter_application_1/widgets/app_top_bar.dart';
 
@@ -25,12 +26,13 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3B62FF), Color(0xFF2242D6)],
+          colors: [colors.accent, colors.accent.withValues(alpha: 0.72)],
         ),
       ),
       child: SafeArea(
@@ -47,10 +49,10 @@ class HomeHeader extends StatelessWidget {
                 hasUnreadNotifications: hasUnreadNotifications,
               ),
               const SizedBox(height: 36),
-              const Text(
+              Text(
                 'IDR',
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: Colors.white.withValues(alpha: 0.72),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.6,
@@ -63,10 +65,10 @@ class HomeHeader extends StatelessWidget {
                   children: [
                     _BalanceRow(amount: balance, visible: visible),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Available Balance',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Colors.white.withValues(alpha: 0.72),
                         fontSize: 13,
                         letterSpacing: 0.2,
                       ),
@@ -83,7 +85,7 @@ class HomeHeader extends StatelessWidget {
                           width: 1,
                           height: 28,
                           margin: const EdgeInsets.symmetric(horizontal: 24),
-                          color: Colors.white24,
+                          color: Colors.white.withValues(alpha: 0.24),
                         ),
                         _SummaryItem(
                           label: 'Spending',
@@ -124,7 +126,7 @@ class _BalanceRow extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   visible ? formatRupiah(amount) : '••••••',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 36,
                     fontWeight: FontWeight.w800,
@@ -144,7 +146,7 @@ class _BalanceRow extends StatelessWidget {
                       : PhosphorIconsRegular.lock,
                 ),
                 iconSize: 20,
-                color: Colors.white70,
+                color: Colors.white.withValues(alpha: 0.72),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -170,7 +172,10 @@ class _SummaryItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.72),
+            fontSize: 12,
+          ),
         ),
         const SizedBox(height: 4),
         Text(

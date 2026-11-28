@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/feat/savings/savings_service.dart';
 import 'package:flutter_application_1/widgets/amount_field.dart';
-
-const _accent = Color(0xFF3B62FF);
 
 /// Returns true when money was added successfully.
 Future<bool> showSavingsTransferSheet({
@@ -31,7 +30,7 @@ Future<bool> showSavingsTransferSheet({
     constraints: BoxConstraints(
       maxHeight: MediaQuery.of(context).size.height * 0.92,
     ),
-    backgroundColor: Colors.white,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -135,7 +134,9 @@ Future<bool> showSavingsTransferSheet({
                                   );
                                 }
                               },
-                        style: FilledButton.styleFrom(backgroundColor: _accent),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: context.appColors.accent,
+                        ),
                         child: Text(saving ? 'Saving...' : 'Add money'),
                       ),
                     ),
