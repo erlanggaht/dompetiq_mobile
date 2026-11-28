@@ -57,7 +57,6 @@ class _AppDrawerState extends State<AppDrawer> {
         _email = (data['email'] as String?) ?? '';
         _avatar = StorageConfig.avatarUrl(data['avatar'] as String?);
       });
-      debugPrint(data.toString());
     } on DioException {
       debugPrint('Failed to load profile');
     }
